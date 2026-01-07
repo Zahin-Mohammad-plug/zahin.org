@@ -14,8 +14,12 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState<PageType>("about")
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionDirection, setTransitionDirection] = useState<"in" | "out">("in")
+  const [isCinematic, setIsCinematic] = useState(false)
 
   const pageOrder: PageType[] = ["about", "passions", "projects", "stack"]
+  const CINEMATIC_DURATION = 2200
+  const CINEMATIC_SWITCH = 1250
+  const CINEMATIC_UNVEIL = 1500
 
   const handlePageChange = useCallback(
     (newPage: PageType) => {
@@ -23,6 +27,30 @@ export default function Home() {
 
       const currentIndex = pageOrder.indexOf(currentPage)
       const newIndex = pageOrder.indexOf(newPage)
+
+      // Cinematic hand-off from About -> Passions
+      if (currentPage === "about" && newPage === "passions") {
+        setIsCinematic(true)
+
+        // Swap page mid-flight so Passions can settle in as overlay finishes
+        setTimeout(() => {
+          setTransitionDirection("out")
+          setIsTransitioning(true)
+          setCurrentPage(newPage)
+          setTransitionDirection("in")
+        }, CINEMATIC_SWITCH)
+
+        // Allow passions to render behind the overlay before it lifts
+        setTimeout(() => {
+          setIsTransitioning(false)
+        }, CINEMATIC_UNVEIL)
+
+        setTimeout(() => {
+          setIsCinematic(false)
+        }, CINEMATIC_DURATION)
+
+        return
+      }
 
       setTransitionDirection(newIndex > currentIndex ? "out" : "in")
       setIsTransitioning(true)
@@ -147,6 +175,36 @@ export default function Home() {
           transitionDirection={currentPage === "stack" ? transitionDirection : "in"}
         />
       </div>
+
+      {isCinematic ? <CinematicOverlay /> : null}
     </main>
+  )
+}
+
+function CinematicOverlay() {
+  return (
+    <div className="pointer-events-none fixed inset-0 z-30 bg-black">
+      <div
+        className="absolute animate-monitor-zoom"
+        style={{
+          left: "56.4%",
+          top: "34.3%",
+          width: "24%",
+          height: "23%",
+          transformOrigin: "top left",
+        }}
+      >
+        <div
+          className="absolute inset-0 animate-star-pan"
+          style={{
+            backgroundImage: "url('/images/projectspagebackground.png')",
+            backgroundSize: "320px 320px",
+            backgroundRepeat: "repeat",
+            backgroundPosition: "center 92%",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+      </div>
+    </div>
   )
 }

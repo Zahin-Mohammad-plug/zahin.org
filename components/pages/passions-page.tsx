@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useEffect, useState, useRef } from "react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import SparkleOverlay from "@/components/sparkle-overlay"
@@ -66,6 +66,22 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
   const [hoveredPassion, setHoveredPassion] = useState<string | null>(null)
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
+  const [sceneReady, setSceneReady] = useState(false)
+  const [pinsVisible, setPinsVisible] = useState(false)
+
+  useEffect(() => {
+    if (isActive && !isTransitioning) {
+      const revealTimer = setTimeout(() => setSceneReady(true), 180)
+      const pinsTimer = setTimeout(() => setPinsVisible(true), 650)
+      return () => {
+        clearTimeout(revealTimer)
+        clearTimeout(pinsTimer)
+      }
+    }
+
+    setSceneReady(false)
+    setPinsVisible(false)
+  }, [isActive, isTransitioning])
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!containerRef.current) return
@@ -90,25 +106,32 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
             : "opacity-0 translate-y-full pointer-events-none z-0",
       )}
     >
-      {/* Black background */}
-      <div className="absolute inset-0 bg-black" />
-
-      <SparkleOverlay count={35} />
-
-      <div className="absolute bottom-0 left-0 right-0 h-32 overflow-hidden">
-        <Image
-          src="/images/projectspagebackground.png"
-          alt="Space preview"
-          fill
-          className="object-cover object-top opacity-50"
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-black" />
+        <div
+          className={cn(
+            "absolute inset-0 bg-[url('/images/projectspagebackground.png')] bg-[length:320px_320px] bg-repeat bg-[center_92%]",
+            sceneReady ? "animate-star-rise" : "translate-y-6 opacity-0",
+          )}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-black" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+        <SparkleOverlay count={40} />
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center">
+      <div
+        className={cn(
+          "relative z-10 flex h-full flex-col items-center justify-center transition-all duration-900",
+          sceneReady ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0",
+        )}
+      >
         {/* Title badge */}
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30">
+        <div
+          className={cn(
+            "absolute top-8 left-1/2 -translate-x-1/2 z-30 transition-all duration-900",
+            sceneReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
+          )}
+        >
           <div className="px-10 py-3 rounded-2xl bg-slate-800/80 border border-slate-600/50 backdrop-blur-sm">
             <h1 className="font-serif text-2xl md:text-3xl font-semibold text-white tracking-wide italic">Passions</h1>
           </div>
@@ -156,6 +179,7 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
                   <div
                     className={cn(
                       "w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-white shadow-lg transition-all",
+                      pinsVisible ? "opacity-100 scale-100" : "opacity-0 scale-50",
                       passion.pinColor === "orange"
                         ? "bg-gradient-to-br from-amber-400 to-orange-500"
                         : "bg-gradient-to-br from-sky-400 to-blue-500",

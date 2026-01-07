@@ -83,7 +83,12 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
   const [hoveredTech, setHoveredTech] = useState<string | null>(null)
   const [hoveredOrbit, setHoveredOrbit] = useState<string | null>(null)
   const [bgOffset, setBgOffset] = useState({ x: 0, y: 0 })
+  const [mounted, setMounted] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (!isActive) return
@@ -115,7 +120,7 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
   }, [isActive])
 
   const getRadius = (base: number) => {
-    if (typeof window === "undefined") return base
+    if (!mounted || typeof window === "undefined") return base
     const vw = Math.min(window.innerWidth, 1200)
     return (base * vw) / 1200
   }
