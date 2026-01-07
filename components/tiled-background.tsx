@@ -37,6 +37,14 @@ interface TiledBackgroundProps {
    * Image source path
    */
   imageSrc?: string
+  /**
+   * Parallax offset for transitions (pixels)
+   */
+  parallaxOffset?: { x?: number; y?: number }
+  /**
+   * Parallax speed multiplier (0.3 = moves at 30% speed, 1.2 = moves at 120% speed)
+   */
+  parallaxSpeed?: number
 }
 
 export default function TiledBackground({
@@ -49,6 +57,8 @@ export default function TiledBackground({
   usePanningStyle = false,
   className,
   imageSrc = "/images/projectspagebackground.png",
+  parallaxOffset = { x: 0, y: 0 },
+  parallaxSpeed = 1.0,
 }: TiledBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [imgLoaded, setImgLoaded] = useState(false)
@@ -172,6 +182,10 @@ export default function TiledBackground({
     }
   }, [imgLoaded, sceneReady, dimensions, sizeMultiplier, extraSize, tileOffset, extraTiles, handleResize, imageSrc])
 
+  // Calculate parallax transform
+  const parallaxX = (parallaxOffset.x || 0) * parallaxSpeed
+  const parallaxY = (parallaxOffset.y || 0) * parallaxSpeed
+
   return (
     <canvas
       ref={canvasRef}
@@ -181,16 +195,18 @@ export default function TiledBackground({
         usePanningStyle && "animate-slow-pan",
         className,
       )}
-      style={
-        usePanningStyle
+      style={{
+        ...(usePanningStyle
           ? {
               width: "130%",
               height: "130%",
               top: "-15%",
               left: "-15%",
             }
-          : undefined
-      }
+          : {}),
+        transform: parallaxX !== 0 || parallaxY !== 0 ? `translate(${parallaxX}px, ${parallaxY}px)` : undefined,
+        willChange: parallaxX !== 0 || parallaxY !== 0 ? "transform" : undefined,
+      }}
     />
   )
 }

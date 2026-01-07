@@ -70,8 +70,9 @@ const projects: Project[] = [
 export default function ProjectsPage({ isActive, isTransitioning, transitionDirection }: ProjectsPageProps) {
   const [hoveredProject, setHoveredProject] = useState<string | null>(null)
   const [sceneReady, setSceneReady] = useState(false)
-  const [pinsVisible, setPinsVisible] = useState(false)
+  const [pinsVisible, setPinsVisible] = useState<Record<string, boolean>>({})
   const globeContainerRef = useRef<HTMLDivElement>(null)
+  const [isMobile, setIsMobile] = useState(false)
   
   // Drag state for each card
   const [cardPositions, setCardPositions] = useState<Record<string, { x: number; y: number }> | null>(null)
@@ -79,17 +80,37 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
+    // Check if mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < TRANSITION_CONSTANTS.MOBILE_BREAKPOINT)
+    }
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
+
+  useEffect(() => {
     if (isActive && !isTransitioning) {
       const revealTimer = setTimeout(() => setSceneReady(true), TRANSITION_CONSTANTS.SCENE_REVEAL_DELAY)
-      const pinsTimer = setTimeout(() => setPinsVisible(true), TRANSITION_CONSTANTS.PINS_REVEAL_DELAY)
+      
+      // Stagger pin appearance
+      const pinTimers: NodeJS.Timeout[] = []
+      projects.forEach((project, index) => {
+        const delay = TRANSITION_CONSTANTS.PINS_REVEAL_DELAY + index * TRANSITION_CONSTANTS.PIN_STAGGER_DELAY
+        const timer = setTimeout(() => {
+          setPinsVisible((prev) => ({ ...prev, [project.id]: true }))
+        }, delay)
+        pinTimers.push(timer)
+      })
+      
       return () => {
         clearTimeout(revealTimer)
-        clearTimeout(pinsTimer)
+        pinTimers.forEach(clearTimeout)
       }
     }
 
     setSceneReady(false)
-    setPinsVisible(false)
+    setPinsVisible({})
   }, [isActive, isTransitioning])
 
   const handleMouseDown = (e: React.MouseEvent, projectId: string) => {
@@ -123,7 +144,7 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
     <div
       className={cn(
         "absolute inset-0 transition-all duration-700 ease-in-out",
-        isActive && !isTransitioning
+        isActive
           ? "opacity-100 translate-y-0 z-10"
           : transitionDirection === "out"
             ? "opacity-0 scale-90 pointer-events-none z-0"
@@ -143,6 +164,7 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
             handleResize={true}
             usePanningStyle={true}
             className="absolute"
+            parallaxSpeed={TRANSITION_CONSTANTS.PARALLAX_BACKGROUND_OFFSET}
           />
         </div>
         <div className="absolute inset-0 bg-black/70" />
@@ -173,10 +195,21 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
 
         <div 
           ref={globeContainerRef}
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl" 
-          style={{ marginBottom: "-8%" }}
+          className={cn(
+            "absolute bottom-0 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl",
+            sceneReady && "animate-zoom-in-space"
+          )}
+          style={{ 
+            marginBottom: "-8%",
+            willChange: "transform, opacity",
+          }}
         >
-          <div className="relative">
+          <div 
+            className="relative"
+            style={{
+              willChange: "transform",
+            }}
+          >
             <Image
               src="/images/projectspageglobe.png"
               alt="Globe"
@@ -205,8 +238,13 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
                   viewBox="0 0 512 512"
                   className={cn(
                     "transition-all drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]",
-                    pinsVisible ? "opacity-100 scale-100" : "opacity-0 scale-50",
+                    pinsVisible[project.id] ? "opacity-100 scale-100" : "opacity-0 scale-50",
+                    pinsVisible[project.id] && "animate-pulse-glow-enhanced",
+                    hoveredProject === project.id && "drop-shadow-[0_0_16px_currentColor]",
                   )}
+                  style={{
+                    willChange: "transform, opacity",
+                  }}
                 >
                   <path
                     d="M256,0C160.798,0,83.644,77.155,83.644,172.356c0,97.162,48.158,117.862,101.386,182.495C248.696,432.161,256,512,256,512s7.304-79.839,70.97-157.148c53.228-64.634,101.386-85.334,101.386-182.495C428.356,77.155,351.202,0,256,0z M256,231.921c-32.897,0-59.564-26.668-59.564-59.564s26.668-59.564,59.564-59.564c32.896,0,59.564,26.668,59.564,59.564S288.896,231.921,256,231.921z"

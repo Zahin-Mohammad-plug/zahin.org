@@ -68,6 +68,7 @@ export default function Home() {
       }
 
       // Seamless transition between Passions <-> Projects (shared background)
+      // Creates "scrolling down through galaxy" effect
       if ((currentPageRef.current === "passions" && newPage === "projects") || (currentPageRef.current === "projects" && newPage === "passions")) {
         setShowSharedBackground(true)
         setTransitionDirection(newIndex > currentIndex ? "out" : "in")
@@ -86,6 +87,7 @@ export default function Home() {
       }
 
       // Seamless transition between Projects <-> Stack (shared background)
+      // Creates "zooming out to full galaxy view" effect
       if ((currentPageRef.current === "projects" && newPage === "stack") || (currentPageRef.current === "stack" && newPage === "projects")) {
         setShowSharedBackground(true)
         setTransitionDirection(newIndex > currentIndex ? "out" : "in")
@@ -221,6 +223,7 @@ export default function Home() {
               handleResize={true}
               usePanningStyle={true}
               className="absolute"
+              parallaxSpeed={TRANSITION_CONSTANTS.PARALLAX_BACKGROUND_OFFSET}
             />
             <div className="absolute inset-0 bg-black/70" />
           </div>
@@ -228,23 +231,23 @@ export default function Home() {
 
         <AboutPage
           isActive={currentPage === "about"}
-          isTransitioning={isTransitioning && (currentPage === "about" || transitionDirection === "out")}
-          transitionDirection={currentPage === "about" ? transitionDirection : "in"}
+          isTransitioning={isTransitioning}
+          transitionDirection={currentPage === "about" ? transitionDirection : pageOrder.indexOf("about") < pageOrder.indexOf(currentPage) ? "out" : "in"}
         />
         <PassionsPage
           isActive={currentPage === "passions"}
-          isTransitioning={isTransitioning && (currentPage === "passions" || transitionDirection === "out")}
-          transitionDirection={currentPage === "passions" ? transitionDirection : "in"}
+          isTransitioning={isTransitioning}
+          transitionDirection={currentPage === "passions" ? transitionDirection : pageOrder.indexOf("passions") < pageOrder.indexOf(currentPage) ? "out" : "in"}
         />
         <ProjectsPage
           isActive={currentPage === "projects"}
-          isTransitioning={isTransitioning && (currentPage === "projects" || transitionDirection === "out")}
-          transitionDirection={currentPage === "projects" ? transitionDirection : "in"}
+          isTransitioning={isTransitioning}
+          transitionDirection={currentPage === "projects" ? transitionDirection : pageOrder.indexOf("projects") < pageOrder.indexOf(currentPage) ? "out" : "in"}
         />
         <StackPage
           isActive={currentPage === "stack"}
-          isTransitioning={isTransitioning && (currentPage === "stack" || transitionDirection === "out")}
-          transitionDirection={currentPage === "stack" ? transitionDirection : "in"}
+          isTransitioning={isTransitioning}
+          transitionDirection={currentPage === "stack" ? transitionDirection : pageOrder.indexOf("stack") < pageOrder.indexOf(currentPage) ? "out" : "in"}
         />
       </div>
 

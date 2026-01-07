@@ -70,22 +70,43 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
   const [sceneReady, setSceneReady] = useState(false)
-  const [pinsVisible, setPinsVisible] = useState(false)
+  const [pinsVisible, setPinsVisible] = useState<Record<string, boolean>>({})
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    // Check if mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < TRANSITION_CONSTANTS.MOBILE_BREAKPOINT)
+    }
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
 
   useEffect(() => {
     // Only set scene ready when page is active and not transitioning
     if (isActive && !isTransitioning) {
       const revealTimer = setTimeout(() => setSceneReady(true), TRANSITION_CONSTANTS.SCENE_REVEAL_DELAY)
-      const pinsTimer = setTimeout(() => setPinsVisible(true), TRANSITION_CONSTANTS.PINS_REVEAL_DELAY)
+      
+      // Stagger pin appearance
+      const pinTimers: NodeJS.Timeout[] = []
+      passions.forEach((passion, index) => {
+        const delay = TRANSITION_CONSTANTS.PINS_REVEAL_DELAY + index * TRANSITION_CONSTANTS.PIN_STAGGER_DELAY
+        const timer = setTimeout(() => {
+          setPinsVisible((prev) => ({ ...prev, [passion.id]: true }))
+        }, delay)
+        pinTimers.push(timer)
+      })
+      
       return () => {
         clearTimeout(revealTimer)
-        clearTimeout(pinsTimer)
+        pinTimers.forEach(clearTimeout)
       }
     }
 
     // Reset scene state when page becomes inactive
     setSceneReady(false)
-    setPinsVisible(false)
+    setPinsVisible({})
   }, [isActive, isTransitioning])
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -104,7 +125,7 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
     <div
       className={cn(
         "absolute inset-0 transition-all duration-700 ease-in-out",
-        isActive && !isTransitioning
+        isActive
           ? "opacity-100 translate-y-0 z-10"
           : transitionDirection === "out"
             ? "opacity-0 -translate-y-[30%] pointer-events-none z-0"
@@ -122,6 +143,7 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
           tileOffset={-320}
           extraTiles={2}
           className="absolute inset-0"
+          parallaxSpeed={TRANSITION_CONSTANTS.PARALLAX_BACKGROUND_OFFSET}
         />
         <div className="absolute inset-0 bg-black/70" />
         <SparkleOverlay count={40} />
@@ -148,19 +170,28 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
 
         <div
           ref={containerRef}
-          className="relative mt-16"
+          className={cn(
+            "relative mt-16",
+            sceneReady && "animate-slide-up-fade"
+          )}
           style={{
             width: "min(80vw, 650px)",
             perspective: "1000px",
+            willChange: "transform",
           }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
           <div
-            className="relative transition-transform duration-200 ease-out"
+            className={cn(
+              "relative transition-transform duration-200 ease-out",
+              !isMobile && sceneReady && "animate-float-gentle"
+            )}
             style={{
               transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
               transformStyle: "preserve-3d",
+              filter: sceneReady ? "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5))" : "none",
+              willChange: "transform, filter",
             }}
           >
             <Image
@@ -188,11 +219,16 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
                   <div
                     className={cn(
                       "w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-white shadow-lg transition-all",
-                      pinsVisible ? "opacity-100 scale-100" : "opacity-0 scale-50",
+                      pinsVisible[passion.id] ? "opacity-100 scale-100" : "opacity-0 scale-50",
+                      pinsVisible[passion.id] && "animate-pulse-glow-enhanced",
+                      hoveredPassion === passion.id && "ring-2 ring-white/50 ring-offset-2 ring-offset-transparent",
                       passion.pinColor === "orange"
                         ? "bg-gradient-to-br from-amber-400 to-orange-500"
                         : "bg-gradient-to-br from-sky-400 to-blue-500",
                     )}
+                    style={{
+                      willChange: "transform, opacity",
+                    }}
                   />
                 </div>
 

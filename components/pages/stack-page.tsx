@@ -136,6 +136,31 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
     setSceneReady(false)
   }, [isActive, isTransitioning])
 
+  // Entrance animation state
+  const [entranceScale, setEntranceScale] = useState(0)
+  
+  useEffect(() => {
+    if (sceneReady && isActive && !isTransitioning) {
+      // Animate orbits expanding from center
+      const startTime = Date.now()
+      const duration = 800
+      const animate = () => {
+        const elapsed = Date.now() - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        // Ease out cubic
+        const eased = 1 - Math.pow(1 - progress, 3)
+        setEntranceScale(eased)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate)
+        }
+      }
+      animate()
+    } else {
+      setEntranceScale(0)
+    }
+  }, [sceneReady, isActive, isTransitioning])
+
   // Wheel zoom handler - only zoom when over orbit area
   useEffect(() => {
     if (!isActive || !containerRef.current) return
@@ -272,17 +297,30 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
           onMouseEnter={() => setHoveredTech(tech.name)}
           onMouseLeave={() => setHoveredTech(null)}
         >
+          {/* Subtle trail effect */}
+          {hoveredTech === tech.name && (
+            <div
+              className="absolute -z-10 w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full animate-orbit-trail"
+              style={{
+                background: `radial-gradient(circle, ${orbitKey === "inner" ? "rgba(168, 85, 247, 0.15)" : orbitKey === "middle" ? "rgba(59, 130, 246, 0.15)" : "rgba(16, 185, 129, 0.15)"}, transparent)`,
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          )}
           <div
             className={cn(
               "w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full cursor-pointer transition-all duration-200 flex items-center justify-center",
               tech.hasDarkIcon ? "bg-white/90 p-1.5" : "bg-transparent",
               hoveredTech === tech.name && "scale-150",
             )}
+            style={{
+              willChange: "transform",
+            }}
           >
             <img
               src={tech.icon || "/placeholder.svg"}
               alt={tech.name}
-              className="w-full h-full drop-shadow-lg"
+              className="w-full h-full drop-shadow-md"
               crossOrigin="anonymous"
             />
           </div>
@@ -305,7 +343,7 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
       ref={containerRef}
       className={cn(
         "absolute inset-0 transition-all duration-700 ease-in-out overflow-hidden",
-        isActive && !isTransitioning
+        isActive
           ? "opacity-100 translate-y-0 z-10"
           : transitionDirection === "out"
             ? "opacity-0 scale-150 pointer-events-none z-0"
@@ -335,6 +373,7 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
             extraTiles={4}
             handleResize={true}
             className="absolute inset-0"
+            parallaxSpeed={TRANSITION_CONSTANTS.PARALLAX_BACKGROUND_OFFSET}
           />
         </div>
         <div className="absolute inset-0 bg-black/40" />
@@ -348,7 +387,9 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
           style={{
             width: "min(90vw, 800px)",
             height: "min(90vw, 800px)",
-            transform: `scale(${zoom}) translate(${panOffset.x / zoom}px, ${panOffset.y / zoom}px)`,
+            transform: `scale(${zoom * entranceScale}) translate(${panOffset.x / zoom}px, ${panOffset.y / zoom}px)`,
+            opacity: entranceScale,
+            willChange: "transform, opacity",
           }}
           onMouseMove={handleOrbitMouseMove}
           onMouseEnter={() => setIsOverOrbitArea(true)}
@@ -411,11 +452,23 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
           {/* Central glowing orb */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
             <div className="relative">
-              <div className="w-14 h-14 md:w-18 md:h-18 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br from-purple-400 via-pink-400 to-purple-600 shadow-2xl shadow-purple-500/50" />
-              <div className="absolute inset-[-8px] rounded-full bg-purple-400/30 blur-xl animate-pulse" />
+              <div className="w-14 h-14 md:w-18 md:h-18 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br from-purple-400 via-pink-400 to-purple-600 shadow-lg shadow-purple-500/30 animate-pulse-glow-enhanced" 
+                style={{
+                  animation: "pulse-glow-enhanced 4s ease-in-out infinite",
+                  willChange: "transform, filter",
+                }}
+              />
+              <div className="absolute inset-[-6px] rounded-full bg-purple-400/20 blur-lg animate-pulse" 
+                style={{
+                  animation: "pulse 3s ease-in-out infinite",
+                }}
+              />
               <div
-                className="absolute inset-[-16px] rounded-full bg-pink-400/20 blur-2xl animate-pulse"
-                style={{ animationDelay: "0.5s" }}
+                className="absolute inset-[-12px] rounded-full bg-pink-400/15 blur-xl animate-pulse"
+                style={{ 
+                  animationDelay: "0.5s",
+                  animation: "pulse 3.5s ease-in-out infinite",
+                }}
               />
             </div>
           </div>
