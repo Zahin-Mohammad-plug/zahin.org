@@ -56,8 +56,8 @@ export default function Navigation({ currentPage, onPageChange }: NavigationProp
       </nav>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-4 z-50 flex items-center justify-center md:hidden">
-        <div className="flex items-center gap-3 rounded-full bg-black/70 px-4 py-2 shadow-lg backdrop-blur">
+      <nav className="fixed inset-x-0 bottom-2 z-50 flex items-center justify-center px-4 md:hidden">
+        <div className="flex items-center gap-1.5 rounded-full bg-black/80 px-2.5 py-1.5 shadow-xl backdrop-blur-md border border-white/10">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = currentPage === item.id
@@ -67,14 +67,14 @@ export default function Navigation({ currentPage, onPageChange }: NavigationProp
                 key={item.id}
                 onClick={() => onPageChange(item.id)}
                 className={cn(
-                  "flex items-center gap-1 rounded-full px-3 py-2 text-xs font-semibold transition-colors",
+                  "flex items-center gap-1 rounded-full px-2 py-1.5 text-[0.65rem] font-semibold transition-all duration-200",
                   isActive
                     ? "bg-white text-black"
-                    : "bg-white/10 text-gray-200 hover:bg-white/20",
+                    : "bg-white/5 text-gray-300 hover:bg-white/10 active:scale-95",
                 )}
               >
-                <Icon className={cn("h-4 w-4", isActive && "text-black")} />
-                <span className={cn(isActive ? "text-black" : "text-gray-100")}>{item.label}</span>
+                <Icon className={cn("h-3.5 w-3.5", isActive && "text-black")} />
+                <span className={cn("hidden xs:inline", isActive ? "text-black" : "text-gray-200")}>{item.label}</span>
               </button>
             )
           })}

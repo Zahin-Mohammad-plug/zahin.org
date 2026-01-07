@@ -4,7 +4,7 @@ import { Github, Linkedin, Mail } from "lucide-react"
 
 export default function ContactLinks() {
   return (
-    <div className="fixed bottom-4 left-4 z-50 flex items-center gap-2 md:bottom-6 md:left-6 md:gap-3">
+    <div className="fixed top-4 left-4 md:bottom-6 md:left-6 md:top-auto z-50 flex items-center gap-2 md:gap-3">
       <a
         href="https://github.com/Zahin-Mohammad-plug"
         target="_blank"
