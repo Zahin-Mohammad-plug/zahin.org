@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { ExternalLink } from "lucide-react"
 import SparkleOverlay from "@/components/sparkle-overlay"
+import TiledBackground from "@/components/tiled-background"
+import { TRANSITION_CONSTANTS } from "@/constants/transitions"
 
 interface ProjectsPageProps {
   isActive: boolean
@@ -26,94 +28,6 @@ interface Project {
   pinColor: "orange" | "blue"
 }
 
-// Component for tiled background with random flips
-const TiledBackground: React.FC<{ sceneReady: boolean }> = ({ sceneReady }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [imgLoaded, setImgLoaded] = useState(false)
-
-  useEffect(() => {
-    if (!canvasRef.current || !imgLoaded || !sceneReady) return
-
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
-
-    const drawBackground = () => {
-      // Make canvas 130% of viewport to support panning animation
-      const width = Math.ceil(window.innerWidth * 1.3)
-      const height = Math.ceil(window.innerHeight * 1.3)
-      canvas.width = width
-      canvas.height = height
-
-      // Load and draw the background image
-      const img = new window.Image()
-      img.src = "/images/projectspagebackground.png"
-
-      img.onload = () => {
-        const tileSize = 320
-        // Calculate tiles needed to fill the expanded canvas
-        const cols = Math.ceil(width / tileSize) + 1
-        const rows = Math.ceil(height / tileSize) + 1
-
-        // Seed for consistent random flips during the session
-        for (let row = 0; row < rows; row++) {
-          for (let col = 0; col < cols; col++) {
-            const x = col * tileSize
-            const y = row * tileSize
-
-            // Simple hash for consistent randomness per position
-            const seed = col + row * 1000
-            const shouldFlipX = (seed * 73 + 1) % 2 === 0
-            const shouldFlipY = (seed * 97 + 1) % 2 === 0
-
-            ctx.save()
-            ctx.translate(x + tileSize / 2, y + tileSize / 2)
-
-            if (shouldFlipX) ctx.scale(-1, 1)
-            if (shouldFlipY) ctx.scale(1, -1)
-
-            ctx.drawImage(img, -tileSize / 2, -tileSize / 2, tileSize, tileSize)
-            ctx.restore()
-          }
-        }
-      }
-    }
-
-    drawBackground()
-
-    // Redraw on window resize with debouncing
-    let resizeTimeout: NodeJS.Timeout
-    const handleResize = () => {
-      clearTimeout(resizeTimeout)
-      resizeTimeout = setTimeout(drawBackground, 150)
-    }
-
-    window.addEventListener('resize', handleResize)
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      clearTimeout(resizeTimeout)
-    }
-  }, [imgLoaded, sceneReady])
-
-  useEffect(() => {
-    const img = new window.Image()
-    img.onload = () => setImgLoaded(true)
-    img.src = "/images/projectspagebackground.png"
-  }, [])
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className={cn("absolute transition-all duration-1000", sceneReady ? "opacity-100" : "opacity-0")}
-      style={{
-        width: '130%',
-        height: '130%',
-        top: '-15%',
-        left: '-15%',
-      }}
-    />
-  )
-}
 
 const projects: Project[] = [
   {
@@ -166,8 +80,8 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
 
   useEffect(() => {
     if (isActive && !isTransitioning) {
-      const revealTimer = setTimeout(() => setSceneReady(true), 180)
-      const pinsTimer = setTimeout(() => setPinsVisible(true), 650)
+      const revealTimer = setTimeout(() => setSceneReady(true), TRANSITION_CONSTANTS.SCENE_REVEAL_DELAY)
+      const pinsTimer = setTimeout(() => setPinsVisible(true), TRANSITION_CONSTANTS.PINS_REVEAL_DELAY)
       return () => {
         clearTimeout(revealTimer)
         clearTimeout(pinsTimer)
@@ -222,7 +136,14 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
       )}>
         <div className="absolute inset-0 bg-black" />
         <div className="absolute inset-0 animate-slow-pan">
-          <TiledBackground sceneReady={sceneReady} />
+          <TiledBackground
+            sceneReady={sceneReady}
+            sizeMultiplier={1.3}
+            extraTiles={1}
+            handleResize={true}
+            usePanningStyle={true}
+            className="absolute"
+          />
         </div>
         <div className="absolute inset-0 bg-black/70" />
         <SparkleOverlay count={45} />

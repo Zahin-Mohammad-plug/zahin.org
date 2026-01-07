@@ -15,16 +15,21 @@ interface AboutPageProps {
 export default function AboutPage({ isActive, isTransitioning, transitionDirection }: AboutPageProps) {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [aboutImage, setAboutImage] = useState("/images/aboutmepagedark.png")
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+    // Set initial image based on theme after mount to avoid hydration mismatch
+    const initialImage = resolvedTheme === "light" ? "/images/aboutmepagelight.png" : "/images/aboutmepagedark.png"
+    setAboutImage(initialImage)
+  }, [resolvedTheme])
 
-  const aboutImage = !mounted
-    ? "/images/aboutmepagedark.png"
-    : resolvedTheme === "light"
-      ? "/images/aboutmepagelight.png"
-      : "/images/aboutmepagedark.png"
+  // Update image when theme changes
+  useEffect(() => {
+    if (!mounted) return
+    const image = resolvedTheme === "light" ? "/images/aboutmepagelight.png" : "/images/aboutmepagedark.png"
+    setAboutImage(image)
+  }, [resolvedTheme, mounted])
 
   return (
     <div

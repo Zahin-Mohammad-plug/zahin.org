@@ -6,6 +6,8 @@ import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import SparkleOverlay from "@/components/sparkle-overlay"
+import TiledBackground from "@/components/tiled-background"
+import { TRANSITION_CONSTANTS } from "@/constants/transitions"
 
 interface StackPageProps {
   isActive: boolean
@@ -13,80 +15,6 @@ interface StackPageProps {
   transitionDirection?: "in" | "out"
 }
 
-// Component for tiled background with random flips
-const TiledBackground: React.FC<{ sceneReady: boolean }> = ({ sceneReady }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [imgLoaded, setImgLoaded] = useState(false)
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      setDimensions({ width: window.innerWidth, height: window.innerHeight })
-    }
-    updateDimensions()
-    window.addEventListener("resize", updateDimensions)
-    return () => window.removeEventListener("resize", updateDimensions)
-  }, [])
-
-  useEffect(() => {
-    if (!canvasRef.current || !imgLoaded || !sceneReady || !dimensions.width) return
-
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
-
-    // Set canvas size to viewport with extra space for parallax
-    const width = dimensions.width + 200
-    const height = dimensions.height + 200
-    canvas.width = width
-    canvas.height = height
-
-    // Load and draw the background image
-    const img = new window.Image()
-    img.src = "/images/projectspagebackground.png"
-
-    img.onload = () => {
-      const tileSize = 320
-      const cols = Math.ceil(width / tileSize) + 4
-      const rows = Math.ceil(height / tileSize) + 4
-
-      // Seed for consistent random flips during the session
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          const x = col * tileSize - tileSize * 2
-          const y = row * tileSize - tileSize * 2
-
-          // Simple hash for consistent randomness per position
-          const seed = col + row * 1000
-          const shouldFlipX = (seed * 73 + 1) % 2 === 0
-          const shouldFlipY = (seed * 97 + 1) % 2 === 0
-
-          ctx.save()
-          ctx.translate(x + tileSize / 2, y + tileSize / 2)
-
-          if (shouldFlipX) ctx.scale(-1, 1)
-          if (shouldFlipY) ctx.scale(1, -1)
-
-          ctx.drawImage(img, -tileSize / 2, -tileSize / 2, tileSize, tileSize)
-          ctx.restore()
-        }
-      }
-    }
-  }, [imgLoaded, sceneReady, dimensions])
-
-  useEffect(() => {
-    const img = new window.Image()
-    img.onload = () => setImgLoaded(true)
-    img.src = "/images/projectspagebackground.png"
-  }, [])
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className={cn("absolute inset-0 transition-all duration-1000", sceneReady ? "opacity-100" : "opacity-0")}
-    />
-  )
-}
 
 interface TechItem {
   name: string
@@ -166,18 +94,45 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [isOverOrbitArea, setIsOverOrbitArea] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [radii, setRadii] = useState({ inner: 95, middle: 175, outer: 270 })
   const containerRef = useRef<HTMLDivElement>(null)
   const orbitsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setMounted(true)
+    // Check mobile status on mount
+    if (typeof window !== "undefined") {
+      setIsMobile(window.innerWidth < 768)
+      // Calculate responsive radii after mount
+      const vw = Math.min(window.innerWidth, 1200)
+      setRadii({
+        inner: (95 * vw) / 1200,
+        middle: (175 * vw) / 1200,
+        outer: (270 * vw) / 1200,
+      })
+    }
+  }, [])
+
+  // Track window width changes for mobile detection
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
   }, [])
 
   useEffect(() => {
+    // Only set scene ready when page is active and not transitioning
     if (isActive && !isTransitioning) {
-      const revealTimer = setTimeout(() => setSceneReady(true), 180)
+      const revealTimer = setTimeout(() => setSceneReady(true), TRANSITION_CONSTANTS.SCENE_REVEAL_DELAY)
       return () => clearTimeout(revealTimer)
     }
+    // Reset scene ready when page becomes inactive
     setSceneReady(false)
   }, [isActive, isTransitioning])
 
@@ -220,7 +175,7 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
 
   const handleMouseDown = (e: React.MouseEvent) => {
     // Only allow dragging when zoomed in or on mobile
-    if (zoom > 1 || window.innerWidth < 768) {
+    if (zoom > 1 || isMobile) {
       handleDragStart(e.clientX, e.clientY)
     }
   }
@@ -277,7 +232,8 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
   const [rotations, setRotations] = useState({ inner: 0, middle: 0, outer: 0 })
 
   useEffect(() => {
-    if (!isActive) return
+    // Only run animations when page is active, not transitioning, and mounted (client-side)
+    if (!isActive || isTransitioning || !mounted) return
 
     const interval = setInterval(() => {
       setRotations((prev) => ({
@@ -288,15 +244,13 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
     }, 50)
 
     return () => clearInterval(interval)
-  }, [isActive])
+  }, [isActive, isTransitioning, mounted])
 
-  const getRadius = (base: number) => {
-    if (!mounted || typeof window === "undefined") return base
-    const vw = Math.min(window.innerWidth, 1200)
-    return (base * vw) / 1200
-  }
 
   const renderOrbitItems = (items: TechItem[], radius: number, rotation: number, orbitKey: string) => {
+    // Don't render during SSR - only render after mount to prevent hydration mismatch
+    if (!mounted) return null
+
     return items.map((tech, index) => {
       const angle = (index / items.length) * 360 + rotation
       const radian = (angle * Math.PI) / 180
@@ -352,11 +306,11 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
       className={cn(
         "absolute inset-0 transition-all duration-700 ease-in-out overflow-hidden",
         isActive && !isTransitioning
-          ? "opacity-100 scale-100 z-10"
+          ? "opacity-100 translate-y-0 z-10"
           : transitionDirection === "out"
             ? "opacity-0 scale-150 pointer-events-none z-0"
-            : "opacity-0 scale-50 pointer-events-none z-0",
-        isDragging ? "cursor-grabbing" : zoom > 1 || window.innerWidth < 768 ? "cursor-grab" : "",
+            : "opacity-0 translate-y-[30%] pointer-events-none z-0",
+        isDragging ? "cursor-grabbing" : zoom > 1 || isMobile ? "cursor-grab" : "",
       )}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -367,10 +321,21 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
       onTouchEnd={handleDragEnd}
     >
       {/* Background without parallax */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className={cn(
+        "absolute inset-0 overflow-hidden transition-opacity duration-300",
+        isActive && !isTransitioning ? "opacity-100" : "opacity-0"
+      )}>
         <div className="absolute inset-0 bg-black" />
         <div className="absolute inset-[-60px]">
-          <TiledBackground sceneReady={sceneReady} />
+          <TiledBackground
+            sceneReady={sceneReady}
+            sizeMultiplier={1.0}
+            extraSize={200}
+            tileOffset={-640}
+            extraTiles={4}
+            handleResize={true}
+            className="absolute inset-0"
+          />
         </div>
         <div className="absolute inset-0 bg-black/40" />
         <SparkleOverlay count={55} />
@@ -455,18 +420,18 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
             </div>
           </div>
 
-          {renderOrbitItems(techStack.inner, 95, rotations.inner, "inner")}
-          {renderOrbitItems(techStack.middle, 175, rotations.middle, "middle")}
-          {renderOrbitItems(techStack.outer, 270, rotations.outer, "outer")}
+          {renderOrbitItems(techStack.inner, radii.inner, rotations.inner, "inner")}
+          {renderOrbitItems(techStack.middle, radii.middle, rotations.middle, "middle")}
+          {renderOrbitItems(techStack.outer, radii.outer, rotations.outer, "outer")}
         </div>
       </div>
 
       {/* Zoom indicator for mobile/desktop */}
-      {(zoom !== 1 || (window.innerWidth < 768 && mounted)) && (
+      {(zoom !== 1 || (isMobile && mounted)) && (
         <div className="absolute bottom-4 right-4 z-50 px-3 py-2 bg-slate-800/90 border border-slate-600/50 rounded-lg text-white text-xs backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <span>Zoom: {(zoom * 100).toFixed(0)}%</span>
-            {window.innerWidth < 768 && <span className="text-slate-400">• Pinch or drag to explore</span>}
+            {isMobile && <span className="text-slate-400">• Pinch or drag to explore</span>}
           </div>
         </div>
       )}

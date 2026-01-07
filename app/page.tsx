@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 import Navigation from "@/components/navigation"
 import ContactLinks from "@/components/contact-links"
@@ -8,6 +8,8 @@ import AboutPage from "@/components/pages/about-page"
 import PassionsPage from "@/components/pages/passions-page"
 import ProjectsPage from "@/components/pages/projects-page"
 import StackPage from "@/components/pages/stack-page"
+import TiledBackground from "@/components/tiled-background"
+import { TRANSITION_CONSTANTS } from "@/constants/transitions"
 
 type PageType = "about" | "passions" | "projects" | "stack"
 
@@ -18,20 +20,31 @@ export default function Home() {
   const [isCinematic, setIsCinematic] = useState(false)
   const [showSharedBackground, setShowSharedBackground] = useState(false)
 
+  // Use refs for values that don't need to trigger listener re-registration
+  const currentPageRef = useRef<PageType>(currentPage)
+  const isTransitioningRef = useRef<boolean>(isTransitioning)
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    currentPageRef.current = currentPage
+  }, [currentPage])
+
+  useEffect(() => {
+    isTransitioningRef.current = isTransitioning
+  }, [isTransitioning])
+
   const pageOrder: PageType[] = ["about", "passions", "projects", "stack"]
-  const CINEMATIC_DURATION = 2200
-  const CINEMATIC_SWITCH = 1250
-  const CINEMATIC_UNVEIL = 1500
 
   const handlePageChange = useCallback(
     (newPage: PageType) => {
-      if (newPage === currentPage || isTransitioning) return
+      // Use refs to get current values without creating dependency
+      if (newPage === currentPageRef.current || isTransitioningRef.current) return
 
-      const currentIndex = pageOrder.indexOf(currentPage)
+      const currentIndex = pageOrder.indexOf(currentPageRef.current)
       const newIndex = pageOrder.indexOf(newPage)
 
       // Cinematic hand-off from About -> Passions
-      if (currentPage === "about" && newPage === "passions") {
+      if (currentPageRef.current === "about" && newPage === "passions") {
         setIsCinematic(true)
 
         // Swap page mid-flight so Passions can settle in as overlay finishes
@@ -40,34 +53,52 @@ export default function Home() {
           setIsTransitioning(true)
           setCurrentPage(newPage)
           setTransitionDirection("in")
-        }, CINEMATIC_SWITCH)
+        }, TRANSITION_CONSTANTS.CINEMATIC_SWITCH)
 
         // Allow passions to render behind the overlay before it lifts
         setTimeout(() => {
           setIsTransitioning(false)
-        }, CINEMATIC_UNVEIL)
+        }, TRANSITION_CONSTANTS.CINEMATIC_UNVEIL)
 
         setTimeout(() => {
           setIsCinematic(false)
-        }, CINEMATIC_DURATION)
+        }, TRANSITION_CONSTANTS.CINEMATIC_DURATION)
 
         return
       }
 
       // Seamless transition between Passions <-> Projects (shared background)
-      if ((currentPage === "passions" && newPage === "projects") || (currentPage === "projects" && newPage === "passions")) {
+      if ((currentPageRef.current === "passions" && newPage === "projects") || (currentPageRef.current === "projects" && newPage === "passions")) {
         setShowSharedBackground(true)
         setTransitionDirection(newIndex > currentIndex ? "out" : "in")
         setIsTransitioning(true)
 
         setTimeout(() => {
           setCurrentPage(newPage)
-        }, 350)
+        }, TRANSITION_CONSTANTS.STANDARD_TRANSITION_DELAY)
 
         setTimeout(() => {
           setIsTransitioning(false)
           setShowSharedBackground(false)
-        }, 700)
+        }, TRANSITION_CONSTANTS.STANDARD_TRANSITION_DURATION)
+
+        return
+      }
+
+      // Seamless transition between Projects <-> Stack (shared background)
+      if ((currentPageRef.current === "projects" && newPage === "stack") || (currentPageRef.current === "stack" && newPage === "projects")) {
+        setShowSharedBackground(true)
+        setTransitionDirection(newIndex > currentIndex ? "out" : "in")
+        setIsTransitioning(true)
+
+        setTimeout(() => {
+          setCurrentPage(newPage)
+        }, TRANSITION_CONSTANTS.STANDARD_TRANSITION_DELAY)
+
+        setTimeout(() => {
+          setIsTransitioning(false)
+          setShowSharedBackground(false)
+        }, TRANSITION_CONSTANTS.STANDARD_TRANSITION_DURATION)
 
         return
       }
@@ -78,25 +109,24 @@ export default function Home() {
       setTimeout(() => {
         setCurrentPage(newPage)
         setIsTransitioning(false)
-      }, 700)
+      }, TRANSITION_CONSTANTS.STANDARD_TRANSITION_DURATION)
     },
-    [currentPage, isTransitioning],
+    [], // Empty deps - use refs instead
   )
 
   useEffect(() => {
     let lastScrollTime = 0
-    const scrollCooldown = 1000
 
     const handleWheel = (e: WheelEvent) => {
       const now = Date.now()
-      if (now - lastScrollTime < scrollCooldown || isTransitioning) return
+      if (now - lastScrollTime < TRANSITION_CONSTANTS.SCROLL_COOLDOWN || isTransitioningRef.current) return
 
-      const currentIndex = pageOrder.indexOf(currentPage)
+      const currentIndex = pageOrder.indexOf(currentPageRef.current)
 
-      if (e.deltaY > 20 && currentIndex < pageOrder.length - 1) {
+      if (e.deltaY > TRANSITION_CONSTANTS.SCROLL_THRESHOLD && currentIndex < pageOrder.length - 1) {
         lastScrollTime = now
         handlePageChange(pageOrder[currentIndex + 1])
-      } else if (e.deltaY < -20 && currentIndex > 0) {
+      } else if (e.deltaY < -TRANSITION_CONSTANTS.SCROLL_THRESHOLD && currentIndex > 0) {
         lastScrollTime = now
         handlePageChange(pageOrder[currentIndex - 1])
       }
@@ -106,13 +136,12 @@ export default function Home() {
     return () => {
       window.removeEventListener("wheel", handleWheel)
     }
-  }, [currentPage, isTransitioning, handlePageChange])
+  }, [handlePageChange]) // Only depend on handlePageChange, which is now stable
 
   // Touch swipe navigation (mobile)
   useEffect(() => {
     let touchStartY = 0
     let touchStartX = 0
-    const threshold = 50 // minimum vertical movement to trigger
 
     const onTouchStart = (e: TouchEvent) => {
       const touch = e.touches[0]
@@ -121,7 +150,7 @@ export default function Home() {
     }
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (isTransitioning) return
+      if (isTransitioningRef.current) return
       const touch = e.changedTouches[0]
       const deltaY = touch.clientY - touchStartY
       const deltaX = Math.abs(touch.clientX - touchStartX)
@@ -129,10 +158,10 @@ export default function Home() {
       // ignore mostly horizontal swipes
       if (deltaX > Math.abs(deltaY)) return
 
-      const currentIndex = pageOrder.indexOf(currentPage)
-      if (deltaY < -threshold && currentIndex < pageOrder.length - 1) {
+      const currentIndex = pageOrder.indexOf(currentPageRef.current)
+      if (deltaY < -TRANSITION_CONSTANTS.TOUCH_THRESHOLD && currentIndex < pageOrder.length - 1) {
         handlePageChange(pageOrder[currentIndex + 1])
-      } else if (deltaY > threshold && currentIndex > 0) {
+      } else if (deltaY > TRANSITION_CONSTANTS.TOUCH_THRESHOLD && currentIndex > 0) {
         handlePageChange(pageOrder[currentIndex - 1])
       }
     }
@@ -144,14 +173,14 @@ export default function Home() {
       window.removeEventListener("touchstart", onTouchStart)
       window.removeEventListener("touchend", onTouchEnd)
     }
-  }, [currentPage, isTransitioning, handlePageChange])
+  }, [handlePageChange]) // Only depend on handlePageChange, which is now stable
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isTransitioning) return
+      if (isTransitioningRef.current) return
 
-      const currentIndex = pageOrder.indexOf(currentPage)
+      const currentIndex = pageOrder.indexOf(currentPageRef.current)
 
       if ((e.key === "ArrowDown" || e.key === "PageDown") && currentIndex < pageOrder.length - 1) {
         handlePageChange(pageOrder[currentIndex + 1])
@@ -162,7 +191,11 @@ export default function Home() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [currentPage, isTransitioning, handlePageChange])
+  }, [handlePageChange]) // Only depend on handlePageChange, which is now stable
+
+  // Determine if shared background should be visible
+  const isSharedBackgroundVisible = showSharedBackground || currentPage === "passions" || currentPage === "projects" || currentPage === "stack"
+  const isSharedBackgroundReady = isSharedBackgroundVisible && !isTransitioning
 
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black">
@@ -174,56 +207,20 @@ export default function Home() {
 
       {/* Page Container */}
       <div className="h-full w-full">
-        {/* Shared background for Passions/Projects transition */}
-        {(showSharedBackground || currentPage === "passions" || currentPage === "projects") && (
+        {/* Shared background for Passions/Projects/Stack transition */}
+        {isSharedBackgroundVisible && (
           <div className={cn(
             "absolute inset-0 overflow-hidden transition-opacity duration-700",
-            showSharedBackground || (currentPage === "passions" || currentPage === "projects") && !isTransitioning ? "opacity-100 z-0" : "opacity-0 z-0"
+            isSharedBackgroundReady ? "opacity-100 z-0" : "opacity-0 z-0"
           )}>
             <div className="absolute inset-0 bg-black" />
-            <canvas
-              ref={(canvas) => {
-                if (!canvas) return
-                const ctx = canvas.getContext("2d")
-                if (!ctx) return
-
-                const width = Math.ceil(window.innerWidth * 1.3)
-                const height = Math.ceil(window.innerHeight * 1.3)
-                canvas.width = width
-                canvas.height = height
-
-                const img = new Image()
-                img.src = "/images/projectspagebackground.png"
-                img.onload = () => {
-                  const tileSize = 320
-                  const cols = Math.ceil(width / tileSize) + 1
-                  const rows = Math.ceil(height / tileSize) + 1
-
-                  for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < cols; col++) {
-                      const x = col * tileSize
-                      const y = row * tileSize
-                      const seed = col + row * 1000
-                      const shouldFlipX = (seed * 73 + 1) % 2 === 0
-                      const shouldFlipY = (seed * 97 + 1) % 2 === 0
-
-                      ctx.save()
-                      ctx.translate(x + tileSize / 2, y + tileSize / 2)
-                      if (shouldFlipX) ctx.scale(-1, 1)
-                      if (shouldFlipY) ctx.scale(1, -1)
-                      ctx.drawImage(img, -tileSize / 2, -tileSize / 2, tileSize, tileSize)
-                      ctx.restore()
-                    }
-                  }
-                }
-              }}
-              className="absolute animate-slow-pan"
-              style={{
-                width: '130%',
-                height: '130%',
-                top: '-15%',
-                left: '-15%',
-              }}
+            <TiledBackground
+              sceneReady={isSharedBackgroundReady}
+              sizeMultiplier={1.3}
+              extraTiles={1}
+              handleResize={true}
+              usePanningStyle={true}
+              className="absolute"
             />
             <div className="absolute inset-0 bg-black/70" />
           </div>
