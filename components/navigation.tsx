@@ -17,41 +17,69 @@ export default function Navigation({ currentPage, onPageChange }: NavigationProp
   ]
 
   return (
-    <nav className="fixed left-0 top-0 z-50 hidden h-full flex-col justify-center gap-6 pl-6 md:flex">
-      {navItems.map((item) => {
-        const Icon = item.icon
-        const isActive = currentPage === item.id
+    <>
+      <nav className="fixed left-0 top-0 z-50 hidden h-full flex-col justify-center gap-6 pl-6 md:flex">
+        {navItems.map((item) => {
+          const Icon = item.icon
+          const isActive = currentPage === item.id
 
-        return (
-          <button
-            key={item.id}
-            onClick={() => onPageChange(item.id)}
-            className={cn(
-              "group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300",
-              isActive
-                ? "border-2 border-white/80 bg-transparent"
-                : "border-2 border-transparent hover:border-white/20",
-            )}
-          >
-            <div
+          return (
+            <button
+              key={item.id}
+              onClick={() => onPageChange(item.id)}
               className={cn(
-                "flex items-center justify-center transition-all duration-300",
-                isActive ? "text-white" : "text-gray-400 group-hover:text-gray-200",
+                "group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300",
+                isActive
+                  ? "border-2 border-white/80 bg-transparent"
+                  : "border-2 border-transparent hover:border-white/20",
               )}
             >
-              <Icon className={cn("h-5 w-5 transition-all duration-300", isActive && "fill-white")} />
-            </div>
-            <span
-              className={cn(
-                "text-sm font-bold tracking-wider transition-all duration-300",
-                isActive ? "text-white" : "text-gray-400 group-hover:text-gray-200",
-              )}
-            >
-              {item.label}
-            </span>
-          </button>
-        )
-      })}
-    </nav>
+              <div
+                className={cn(
+                  "flex items-center justify-center transition-all duration-300",
+                  isActive ? "text-white" : "text-gray-400 group-hover:text-gray-200",
+                )}
+              >
+                <Icon className={cn("h-5 w-5 transition-all duration-300", isActive && "fill-white")} />
+              </div>
+              <span
+                className={cn(
+                  "text-sm font-bold tracking-wider transition-all duration-300",
+                  isActive ? "text-white" : "text-gray-400 group-hover:text-gray-200",
+                )}
+              >
+                {item.label}
+              </span>
+            </button>
+          )
+        })}
+      </nav>
+
+      {/* Mobile bottom nav */}
+      <nav className="fixed inset-x-0 bottom-4 z-50 flex items-center justify-center md:hidden">
+        <div className="flex items-center gap-3 rounded-full bg-black/70 px-4 py-2 shadow-lg backdrop-blur">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = currentPage === item.id
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => onPageChange(item.id)}
+                className={cn(
+                  "flex items-center gap-1 rounded-full px-3 py-2 text-xs font-semibold transition-colors",
+                  isActive
+                    ? "bg-white text-black"
+                    : "bg-white/10 text-gray-200 hover:bg-white/20",
+                )}
+              >
+                <Icon className={cn("h-4 w-4", isActive && "text-black")} />
+                <span className={cn(isActive ? "text-black" : "text-gray-100")}>{item.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </nav>
+    </>
   )
 }

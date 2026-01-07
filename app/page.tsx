@@ -60,6 +60,44 @@ export default function Home() {
     }
   }, [currentPage, isTransitioning, handlePageChange])
 
+  // Touch swipe navigation (mobile)
+  useEffect(() => {
+    let touchStartY = 0
+    let touchStartX = 0
+    const threshold = 50 // minimum vertical movement to trigger
+
+    const onTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0]
+      touchStartY = touch.clientY
+      touchStartX = touch.clientX
+    }
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (isTransitioning) return
+      const touch = e.changedTouches[0]
+      const deltaY = touch.clientY - touchStartY
+      const deltaX = Math.abs(touch.clientX - touchStartX)
+
+      // ignore mostly horizontal swipes
+      if (deltaX > Math.abs(deltaY)) return
+
+      const currentIndex = pageOrder.indexOf(currentPage)
+      if (deltaY < -threshold && currentIndex < pageOrder.length - 1) {
+        handlePageChange(pageOrder[currentIndex + 1])
+      } else if (deltaY > threshold && currentIndex > 0) {
+        handlePageChange(pageOrder[currentIndex - 1])
+      }
+    }
+
+    window.addEventListener("touchstart", onTouchStart, { passive: true })
+    window.addEventListener("touchend", onTouchEnd, { passive: true })
+
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart)
+      window.removeEventListener("touchend", onTouchEnd)
+    }
+  }, [currentPage, isTransitioning, handlePageChange])
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
