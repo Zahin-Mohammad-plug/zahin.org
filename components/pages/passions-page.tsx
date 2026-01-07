@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useMemo } from "react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import SparkleOverlay from "@/components/sparkle-overlay"
@@ -21,6 +21,71 @@ interface Passion {
   pinPosition: { top: string; left: string }
   cardOffset: { x: number; y: number }
   pinColor: "orange" | "blue"
+}
+
+// Component for tiled background with random flips
+const TiledBackground: React.FC<{ sceneReady: boolean }> = ({ sceneReady }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [imgLoaded, setImgLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!canvasRef.current || !imgLoaded || !sceneReady) return
+
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    // Set canvas size to viewport
+    const width = window.innerWidth
+    const height = window.innerHeight
+    canvas.width = width
+    canvas.height = height
+
+    // Load and draw the background image
+    const img = new window.Image()
+    img.src = "/images/projectspagebackground.png"
+
+    img.onload = () => {
+      const tileSize = 320
+      const cols = Math.ceil(width / tileSize) + 2
+      const rows = Math.ceil(height / tileSize) + 2
+
+      // Seed for consistent random flips during the session
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const x = col * tileSize - tileSize
+          const y = row * tileSize - tileSize
+
+          // Simple hash for consistent randomness per position
+          const seed = col + row * 1000
+          const shouldFlipX = (seed * 73 + 1) % 2 === 0
+          const shouldFlipY = (seed * 97 + 1) % 2 === 0
+
+          ctx.save()
+          ctx.translate(x + tileSize / 2, y + tileSize / 2)
+
+          if (shouldFlipX) ctx.scale(-1, 1)
+          if (shouldFlipY) ctx.scale(1, -1)
+
+          ctx.drawImage(img, -tileSize / 2, -tileSize / 2, tileSize, tileSize)
+          ctx.restore()
+        }
+      }
+    }
+  }, [imgLoaded, sceneReady])
+
+  useEffect(() => {
+    const img = new window.Image()
+    img.onload = () => setImgLoaded(true)
+    img.src = "/images/projectspagebackground.png"
+  }, [])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={cn("absolute inset-0 transition-all duration-1000", sceneReady ? "opacity-100" : "opacity-0")}
+    />
+  )
 }
 
 const passions: Passion[] = [
@@ -108,13 +173,8 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
     >
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-black" />
-        <div
-          className={cn(
-            "absolute inset-0 bg-[url('/images/projectspagebackground.png')] bg-[length:320px_320px] bg-repeat bg-[center_92%]",
-            sceneReady ? "animate-star-rise" : "translate-y-6 opacity-0",
-          )}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+        <TiledBackground sceneReady={sceneReady} />
+        <div className="absolute inset-0 bg-black/70" />
         <SparkleOverlay count={40} />
       </div>
 
@@ -189,8 +249,8 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
 
                 <div
                   className={cn(
-                    "absolute z-30 w-48 md:w-56 transition-all duration-300 pointer-events-none",
-                    hoveredPassion === passion.id ? "opacity-100 scale-100" : "opacity-0 scale-95",
+                    "absolute z-50 w-48 md:w-56 transition-all duration-300",
+                    hoveredPassion === passion.id ? "opacity-40 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none",
                   )}
                   style={{
                     top: passion.pinPosition.top,
