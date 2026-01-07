@@ -131,6 +131,10 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
             ? "opacity-0 -translate-y-[30%] pointer-events-none z-0"
             : "opacity-0 translate-y-full pointer-events-none z-0",
       )}
+      style={{
+        // Ensure passions page is ready behind cinematic overlay
+        zIndex: isActive ? 10 : isTransitioning && transitionDirection === "in" ? 5 : 0,
+      }}
     >
       <div className={cn(
         "absolute inset-0 overflow-hidden transition-opacity duration-300",
