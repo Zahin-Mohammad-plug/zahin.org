@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
+import { cn } from "@/lib/utils"
 import Navigation from "@/components/navigation"
 import ContactLinks from "@/components/contact-links"
 import AboutPage from "@/components/pages/about-page"
@@ -15,6 +16,7 @@ export default function Home() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionDirection, setTransitionDirection] = useState<"in" | "out">("in")
   const [isCinematic, setIsCinematic] = useState(false)
+  const [showSharedBackground, setShowSharedBackground] = useState(false)
 
   const pageOrder: PageType[] = ["about", "passions", "projects", "stack"]
   const CINEMATIC_DURATION = 2200
@@ -48,6 +50,24 @@ export default function Home() {
         setTimeout(() => {
           setIsCinematic(false)
         }, CINEMATIC_DURATION)
+
+        return
+      }
+
+      // Seamless transition between Passions <-> Projects (shared background)
+      if ((currentPage === "passions" && newPage === "projects") || (currentPage === "projects" && newPage === "passions")) {
+        setShowSharedBackground(true)
+        setTransitionDirection(newIndex > currentIndex ? "out" : "in")
+        setIsTransitioning(true)
+
+        setTimeout(() => {
+          setCurrentPage(newPage)
+        }, 350)
+
+        setTimeout(() => {
+          setIsTransitioning(false)
+          setShowSharedBackground(false)
+        }, 700)
 
         return
       }
@@ -154,6 +174,61 @@ export default function Home() {
 
       {/* Page Container */}
       <div className="h-full w-full">
+        {/* Shared background for Passions/Projects transition */}
+        {(showSharedBackground || currentPage === "passions" || currentPage === "projects") && (
+          <div className={cn(
+            "absolute inset-0 overflow-hidden transition-opacity duration-700",
+            showSharedBackground || (currentPage === "passions" || currentPage === "projects") && !isTransitioning ? "opacity-100 z-0" : "opacity-0 z-0"
+          )}>
+            <div className="absolute inset-0 bg-black" />
+            <canvas
+              ref={(canvas) => {
+                if (!canvas) return
+                const ctx = canvas.getContext("2d")
+                if (!ctx) return
+
+                const width = Math.ceil(window.innerWidth * 1.3)
+                const height = Math.ceil(window.innerHeight * 1.3)
+                canvas.width = width
+                canvas.height = height
+
+                const img = new Image()
+                img.src = "/images/projectspagebackground.png"
+                img.onload = () => {
+                  const tileSize = 320
+                  const cols = Math.ceil(width / tileSize) + 1
+                  const rows = Math.ceil(height / tileSize) + 1
+
+                  for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                      const x = col * tileSize
+                      const y = row * tileSize
+                      const seed = col + row * 1000
+                      const shouldFlipX = (seed * 73 + 1) % 2 === 0
+                      const shouldFlipY = (seed * 97 + 1) % 2 === 0
+
+                      ctx.save()
+                      ctx.translate(x + tileSize / 2, y + tileSize / 2)
+                      if (shouldFlipX) ctx.scale(-1, 1)
+                      if (shouldFlipY) ctx.scale(1, -1)
+                      ctx.drawImage(img, -tileSize / 2, -tileSize / 2, tileSize, tileSize)
+                      ctx.restore()
+                    }
+                  }
+                }
+              }}
+              className="absolute animate-slow-pan"
+              style={{
+                width: '130%',
+                height: '130%',
+                top: '-15%',
+                left: '-15%',
+              }}
+            />
+            <div className="absolute inset-0 bg-black/70" />
+          </div>
+        )}
+
         <AboutPage
           isActive={currentPage === "about"}
           isTransitioning={isTransitioning && (currentPage === "about" || transitionDirection === "out")}

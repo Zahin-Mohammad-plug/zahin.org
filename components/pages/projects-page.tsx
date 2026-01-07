@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import type React from "react"
+
+import { useState, useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { ExternalLink } from "lucide-react"
@@ -24,6 +26,95 @@ interface Project {
   pinColor: "orange" | "blue"
 }
 
+// Component for tiled background with random flips
+const TiledBackground: React.FC<{ sceneReady: boolean }> = ({ sceneReady }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [imgLoaded, setImgLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!canvasRef.current || !imgLoaded || !sceneReady) return
+
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    const drawBackground = () => {
+      // Make canvas 130% of viewport to support panning animation
+      const width = Math.ceil(window.innerWidth * 1.3)
+      const height = Math.ceil(window.innerHeight * 1.3)
+      canvas.width = width
+      canvas.height = height
+
+      // Load and draw the background image
+      const img = new window.Image()
+      img.src = "/images/projectspagebackground.png"
+
+      img.onload = () => {
+        const tileSize = 320
+        // Calculate tiles needed to fill the expanded canvas
+        const cols = Math.ceil(width / tileSize) + 1
+        const rows = Math.ceil(height / tileSize) + 1
+
+        // Seed for consistent random flips during the session
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < cols; col++) {
+            const x = col * tileSize
+            const y = row * tileSize
+
+            // Simple hash for consistent randomness per position
+            const seed = col + row * 1000
+            const shouldFlipX = (seed * 73 + 1) % 2 === 0
+            const shouldFlipY = (seed * 97 + 1) % 2 === 0
+
+            ctx.save()
+            ctx.translate(x + tileSize / 2, y + tileSize / 2)
+
+            if (shouldFlipX) ctx.scale(-1, 1)
+            if (shouldFlipY) ctx.scale(1, -1)
+
+            ctx.drawImage(img, -tileSize / 2, -tileSize / 2, tileSize, tileSize)
+            ctx.restore()
+          }
+        }
+      }
+    }
+
+    drawBackground()
+
+    // Redraw on window resize with debouncing
+    let resizeTimeout: NodeJS.Timeout
+    const handleResize = () => {
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(drawBackground, 150)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(resizeTimeout)
+    }
+  }, [imgLoaded, sceneReady])
+
+  useEffect(() => {
+    const img = new window.Image()
+    img.onload = () => setImgLoaded(true)
+    img.src = "/images/projectspagebackground.png"
+  }, [])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={cn("absolute transition-all duration-1000", sceneReady ? "opacity-100" : "opacity-0")}
+      style={{
+        width: '130%',
+        height: '130%',
+        top: '-15%',
+        left: '-15%',
+      }}
+    />
+  )
+}
+
 const projects: Project[] = [
   {
     id: "lilycove",
@@ -33,7 +124,7 @@ const projects: Project[] = [
     linkText: "Built the production app",
     tech: ["React", "Python", "PostgreSQL", "Redis"],
     pinPosition: { top: "55%", left: "42%" },
-    cardPosition: { top: "30%", left: "12%" },
+    cardPosition: { top: "18%", left: "2%" },
     pinColor: "orange",
   },
   {
@@ -45,7 +136,7 @@ const projects: Project[] = [
     linkText: "Visit site",
     tech: ["Next.js", "Python", "PrusaSlicer", "Three.js", "Docker"],
     pinPosition: { top: "40%", left: "58%" },
-    cardPosition: { top: "15%", right: "3%" },
+    cardPosition: { top: "5%", right: "2%" },
     pinColor: "blue",
   },
   {
@@ -57,13 +148,62 @@ const projects: Project[] = [
     linkText: "Try it out",
     tech: ["TypeScript", "React", "Parsing", "Web Speech API"],
     pinPosition: { top: "62%", left: "54%" },
-    cardPosition: { top: "50%", right: "3%" },
+    cardPosition: { top: "38%", right: "2%" },
     pinColor: "blue",
   },
 ]
 
 export default function ProjectsPage({ isActive, isTransitioning, transitionDirection }: ProjectsPageProps) {
   const [hoveredProject, setHoveredProject] = useState<string | null>(null)
+  const [sceneReady, setSceneReady] = useState(false)
+  const [pinsVisible, setPinsVisible] = useState(false)
+  const globeContainerRef = useRef<HTMLDivElement>(null)
+  
+  // Drag state for each card
+  const [cardPositions, setCardPositions] = useState<Record<string, { x: number; y: number }> | null>(null)
+  const [draggingCard, setDraggingCard] = useState<string | null>(null)
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null)
+
+  useEffect(() => {
+    if (isActive && !isTransitioning) {
+      const revealTimer = setTimeout(() => setSceneReady(true), 180)
+      const pinsTimer = setTimeout(() => setPinsVisible(true), 650)
+      return () => {
+        clearTimeout(revealTimer)
+        clearTimeout(pinsTimer)
+      }
+    }
+
+    setSceneReady(false)
+    setPinsVisible(false)
+  }, [isActive, isTransitioning])
+
+  const handleMouseDown = (e: React.MouseEvent, projectId: string) => {
+    setDraggingCard(projectId)
+    setDragStart({ x: e.clientX, y: e.clientY })
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!draggingCard || !dragStart) return
+
+    const deltaX = e.clientX - dragStart.x
+    const deltaY = e.clientY - dragStart.y
+
+    setCardPositions(prev => ({
+      ...prev,
+      [draggingCard]: {
+        x: (prev?.[draggingCard]?.x || 0) + deltaX,
+        y: (prev?.[draggingCard]?.y || 0) + deltaY,
+      }
+    }))
+
+    setDragStart({ x: e.clientX, y: e.clientY })
+  }
+
+  const handleMouseUp = () => {
+    setDraggingCard(null)
+    setDragStart(null)
+  }
 
   return (
     <div
@@ -73,33 +213,48 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
           ? "opacity-100 translate-y-0 z-10"
           : transitionDirection === "out"
             ? "opacity-0 scale-90 pointer-events-none z-0"
-            : "opacity-0 translate-y-full pointer-events-none z-0",
+            : "opacity-0 translate-y-[30%] pointer-events-none z-0",
       )}
     >
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-[-10%] w-[120%] h-[120%] animate-slow-pan">
-          <Image
-            src="/images/projectspagebackground.png"
-            alt="Space background"
-            fill
-            className="object-cover"
-            priority
-          />
+      <div className={cn(
+        "absolute inset-0 overflow-hidden transition-opacity duration-300",
+        isActive && !isTransitioning ? "opacity-100" : "opacity-0"
+      )}>
+        <div className="absolute inset-0 bg-black" />
+        <div className="absolute inset-0 animate-slow-pan">
+          <TiledBackground sceneReady={sceneReady} />
         </div>
+        <div className="absolute inset-0 bg-black/70" />
+        <SparkleOverlay count={45} />
       </div>
 
-      <SparkleOverlay count={45} />
-
       {/* Main content */}
-      <div className="relative z-10 flex h-full flex-col">
+      <div
+        className={cn(
+          "relative z-10 flex h-full flex-col transition-all duration-900",
+          sceneReady ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0",
+        )}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
         {/* Title badge */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30">
-          <div className="px-8 py-2.5 rounded-2xl bg-slate-800/80 border border-slate-600/50 backdrop-blur-sm">
-            <h1 className="font-serif text-xl md:text-2xl font-semibold text-white tracking-wide italic">Projects</h1>
+        <div
+          className={cn(
+            "absolute top-8 left-1/2 -translate-x-1/2 z-30 transition-all duration-900",
+            sceneReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
+          )}
+        >
+          <div className="px-10 py-3 rounded-2xl bg-slate-800/80 border border-slate-600/50 backdrop-blur-sm">
+            <h1 className="font-serif text-2xl md:text-3xl font-semibold text-white tracking-wide italic">Projects</h1>
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl" style={{ marginBottom: "-8%" }}>
+        <div 
+          ref={globeContainerRef}
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl" 
+          style={{ marginBottom: "-8%" }}
+        >
           <div className="relative">
             <Image
               src="/images/projectspageglobe.png"
@@ -114,80 +269,109 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
             {projects.map((project) => (
               <div
                 key={project.id}
-                className="absolute z-20 cursor-pointer transition-transform duration-200 hover:scale-150"
-                style={{ top: project.pinPosition.top, left: project.pinPosition.left }}
+                className="absolute z-20 cursor-pointer transition-all duration-200 hover:scale-110"
+                style={{ 
+                  top: project.pinPosition.top, 
+                  left: project.pinPosition.left,
+                  transform: "translate(-50%, -100%)",
+                }}
                 onMouseEnter={() => setHoveredProject(project.id)}
                 onMouseLeave={() => setHoveredProject(null)}
               >
-                <div
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 512 512"
                   className={cn(
-                    "w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-white shadow-lg",
-                    project.pinColor === "orange"
-                      ? "bg-gradient-to-br from-amber-400 to-orange-500"
-                      : "bg-gradient-to-br from-sky-400 to-blue-500",
+                    "transition-all drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]",
+                    pinsVisible ? "opacity-100 scale-100" : "opacity-0 scale-50",
                   )}
-                />
+                >
+                  <path
+                    d="M256,0C160.798,0,83.644,77.155,83.644,172.356c0,97.162,48.158,117.862,101.386,182.495C248.696,432.161,256,512,256,512s7.304-79.839,70.97-157.148c53.228-64.634,101.386-85.334,101.386-182.495C428.356,77.155,351.202,0,256,0z M256,231.921c-32.897,0-59.564-26.668-59.564-59.564s26.668-59.564,59.564-59.564c32.896,0,59.564,26.668,59.564,59.564S288.896,231.921,256,231.921z"
+                    className={cn(
+                      project.pinColor === "orange"
+                        ? "fill-orange-500"
+                        : "fill-blue-500",
+                    )}
+                  />
+                </svg>
               </div>
             ))}
-          </div>
-        </div>
 
-        {projects.map((project) => (
-          <div
-            key={`card-${project.id}`}
-            className="absolute z-20"
-            style={project.cardPosition}
-            onMouseEnter={() => setHoveredProject(project.id)}
-            onMouseLeave={() => setHoveredProject(null)}
-          >
-            <div
-              className={cn(
-                "bg-slate-900/90 backdrop-blur-sm border border-slate-600/50 rounded-xl shadow-xl transition-all duration-300 overflow-hidden",
-                hoveredProject === project.id ? "w-52 md:w-60" : "w-auto",
-              )}
-            >
-              {/* Title always visible */}
-              <div className="px-3 py-2">
-                <h3 className="font-serif text-base md:text-lg font-bold text-white whitespace-nowrap">
-                  {project.name}
-                </h3>
-              </div>
-
-              <div
-                className={cn(
-                  "transition-all duration-300 overflow-hidden",
-                  hoveredProject === project.id ? "max-h-60 opacity-100" : "max-h-0 opacity-0",
-                )}
-              >
-                <div className="px-3 pb-3">
-                  <p className="text-xs md:text-sm text-gray-300 leading-relaxed mb-2">{project.description}</p>
-                  {project.link && (
-                    <a
-                      href={project.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-amber-400 text-xs font-medium hover:text-amber-300 transition-colors mb-2"
-                    >
-                      {project.linkText}
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+            {/* Project cards - positioned relative to globe */}
+            {projects.map((project) => {
+              // Calculate card position offset from pin
+              const cardOffsetX = project.id === "lilycove" ? -280 : 50
+              const cardOffsetY = project.id === "lilycove" ? -120 : project.id === "maple-leaf" ? -180 : -80
+              
+              // Apply drag offset if exists
+              const dragOffset = cardPositions?.[project.id] || { x: 0, y: 0 }
+              
+              return (
+                <div
+                  key={`card-${project.id}`}
+                  className={cn(
+                    "absolute z-30",
+                    draggingCard === project.id ? "cursor-grabbing" : "cursor-grab"
                   )}
-                  <div className="flex flex-wrap gap-1">
-                    {project.tech.map((tech, index) => (
-                      <span
-                        key={tech}
-                        className={cn("text-xs", index === 0 ? "text-white font-medium" : "text-gray-400")}
-                      >
-                        {tech}
-                        {index < project.tech.length - 1 && <span className="text-gray-500 ml-1">·</span>}
-                      </span>
-                    ))}
+                  style={{
+                    top: project.pinPosition.top,
+                    left: project.pinPosition.left,
+                    transform: `translate(${cardOffsetX + dragOffset.x}px, ${cardOffsetY + dragOffset.y}px)`,
+                  }}
+                  onMouseEnter={() => setHoveredProject(project.id)}
+                  onMouseLeave={() => setHoveredProject(null)}
+                  onMouseDown={(e) => handleMouseDown(e, project.id)}
+                >
+                  <div
+                    className={cn(
+                      "w-64 sm:w-72 lg:w-80 backdrop-blur-md rounded-xl transition-all duration-300",
+                      "bg-slate-900/75 shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
+                      project.pinColor === "orange"
+                        ? "border border-orange-500/30"
+                        : "border border-blue-500/30",
+                    )}
+                  >
+                    {/* Title */}
+                    <div className="px-3 sm:px-4 py-2.5 sm:py-3">
+                      <h3 className="font-serif text-lg sm:text-xl lg:text-2xl font-bold text-white leading-tight">
+                        {project.name}
+                      </h3>
+                    </div>
+
+                    {/* Content always visible */}
+                    <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-2">
+                      <p className="text-xs sm:text-sm lg:text-base text-gray-200 leading-relaxed">{project.description}</p>
+                      {project.link && (
+                        <a
+                          href={project.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-amber-400 text-xs sm:text-sm lg:text-base font-medium hover:text-amber-300 transition-colors"
+                        >
+                          {project.linkText}
+                          <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" />
+                        </a>
+                      )}
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        {project.tech.map((tech, index) => (
+                          <span
+                            key={tech}
+                            className="text-xs sm:text-sm lg:text-base text-gray-300"
+                          >
+                            {tech}
+                            {index < project.tech.length - 1 && <span className="text-gray-500 mx-1">·</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              )
+            })}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   )
