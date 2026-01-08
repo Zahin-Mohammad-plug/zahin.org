@@ -16,6 +16,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# lock files (using pnpm, so ignore npm/yarn locks)
+package-lock.json
+yarn.lock
+
 # env files
 .env*
 
@@ -25,3 +29,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+package-lock.json

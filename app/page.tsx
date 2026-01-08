@@ -89,14 +89,14 @@ export default function Home() {
     }
   }, [currentPage, isTransitioning, handlePageChange])
 
-  // Touch swipe navigation (mobile)
+  // Touch swipe navigation (mobile) - simplified, only on empty areas
   useEffect(() => {
     let touchStartY = 0
     let touchStartX = 0
     let touchStartTime = 0
     let isInteractingWithElement = false
-    const threshold = 120 // Increased minimum vertical movement to trigger (was 50)
-    const minSwipeTime = 150 // Minimum time for swipe (ms) to distinguish from taps
+    const threshold = 150 // Higher threshold to prevent accidental navigation
+    const minSwipeTime = 200 // Minimum time for swipe
 
     const onTouchStart = (e: TouchEvent) => {
       // Check if touch started on an interactive element or during active drag
@@ -107,6 +107,7 @@ export default function Home() {
                             target.closest('[role="button"]') ||
                             target.closest('a') ||
                             target.closest('[onclick]') ||
+                            target.closest('nav') ||
                             // Stack page orbit area
                             (currentPage === "stack" && target.closest('[data-interactive="true"]'))
       
@@ -131,6 +132,19 @@ export default function Home() {
         isInteractingWithElement = true
         return
       }
+      
+      // If moved significantly, mark as interaction
+      if (touchStartY !== 0 && e.touches.length > 0) {
+        const deltaX = Math.abs(e.touches[0].clientX - touchStartX)
+        const deltaY = Math.abs(e.touches[0].clientY - touchStartY)
+        // If moved more than 10px, likely an interaction, not a swipe
+        if (deltaX > 10 || deltaY > 10) {
+          const target = e.target as HTMLElement
+          if (target.closest('[data-interactive="true"]') || target.closest('[data-dragging="true"]')) {
+            isInteractingWithElement = true
+          }
+        }
+      }
     }
 
     const onTouchEnd = (e: TouchEvent) => {
@@ -144,8 +158,8 @@ export default function Home() {
       const deltaX = Math.abs(touch.clientX - touchStartX)
       const deltaTime = Date.now() - touchStartTime
 
-      // Require minimum swipe time to distinguish from taps/interactions
-      if (deltaTime < minSwipeTime) return
+      // Require minimum swipe time and distance
+      if (deltaTime < minSwipeTime || Math.abs(deltaY) < threshold) return
 
       // ignore mostly horizontal swipes
       if (deltaX > Math.abs(deltaY)) return
@@ -156,6 +170,8 @@ export default function Home() {
       } else if (deltaY > threshold && currentIndex > 0) {
         handlePageChange(pageOrder[currentIndex - 1])
       }
+      
+      isInteractingWithElement = false
     }
 
     window.addEventListener("touchstart", onTouchStart, { passive: true })

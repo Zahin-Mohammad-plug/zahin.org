@@ -140,10 +140,7 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
     setDragStart(null)
   }
 
-  // Track if we're actively dragging to prevent body scroll
-  const [isActivelyDragging, setIsActivelyDragging] = useState(false)
-
-  // Touch handlers for mobile drag
+  // Touch handlers for mobile drag - simplified without body scroll locking
   const handleTouchStart = (e: React.TouchEvent, projectId: string) => {
     // Check if touch started on a link - allow link clicks
     const target = e.target as HTMLElement
@@ -152,10 +149,9 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
     }
 
     if (e.touches.length === 1) {
-      e.stopPropagation() // Don't prevent default yet
+      e.stopPropagation()
       setDraggingCard(projectId)
       setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY })
-      setIsActivelyDragging(false)
     }
   }
 
@@ -170,14 +166,6 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
       // User is dragging, prevent default to stop scroll
       e.preventDefault()
       e.stopPropagation()
-      
-      if (!isActivelyDragging) {
-        setIsActivelyDragging(true)
-        // Prevent body scroll during drag
-        document.body.style.overflow = 'hidden'
-        document.body.style.position = 'fixed'
-        document.body.style.width = '100%'
-      }
 
       const moveDeltaX = e.touches[0].clientX - dragStart.x
       const moveDeltaY = e.touches[0].clientY - dragStart.y
@@ -195,27 +183,13 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (isActivelyDragging) {
+    if (draggingCard) {
       e.preventDefault()
       e.stopPropagation()
-      // Restore body scroll
-      document.body.style.overflow = ''
-      document.body.style.position = ''
-      document.body.style.width = ''
     }
     setDraggingCard(null)
     setDragStart(null)
-    setIsActivelyDragging(false)
   }
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      document.body.style.overflow = ''
-      document.body.style.position = ''
-      document.body.style.width = ''
-    }
-  }, [])
 
   return (
     <div
@@ -372,7 +346,7 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
                     draggingCard === project.id ? "cursor-grabbing" : "cursor-grab"
                   )}
                   data-interactive="true"
-                  data-dragging={isActivelyDragging && draggingCard === project.id ? "true" : "false"}
+                  data-dragging={draggingCard === project.id ? "true" : "false"}
                   style={{
                     top: project.pinPosition.top,
                     left: project.pinPosition.left,

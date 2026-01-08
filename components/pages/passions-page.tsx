@@ -99,22 +99,53 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
     setTilt({ x: 0, y: 0 })
   }
 
-  // Touch handler for mobile tap-to-show cards
+  // Touch handler for mobile tap-to-toggle cards
+  const [touchStartTime, setTouchStartTime] = useState<number>(0)
+  const [touchStartPassion, setTouchStartPassion] = useState<string | null>(null)
+
   const handlePinTouchStart = (e: React.TouchEvent, passionId: string) => {
     e.stopPropagation()
-    // Don't prevent default - we want normal touch behavior
-    // Toggle card visibility on tap (like hover on desktop)
-    setHoveredPassion(hoveredPassion === passionId ? null : passionId)
+    setTouchStartTime(Date.now())
+    setTouchStartPassion(passionId)
   }
 
-  const handlePinTouchEnd = (e: React.TouchEvent) => {
+  const handlePinTouchEnd = (e: React.TouchEvent, passionId: string) => {
     e.stopPropagation()
-    // Don't prevent default
+    e.preventDefault()
+    
+    const touchDuration = Date.now() - touchStartTime
+    // Only toggle if it was a quick tap (not a long press) and same pin
+    if (touchDuration < 300 && touchStartPassion === passionId) {
+      // Toggle card visibility on tap
+      setHoveredPassion(hoveredPassion === passionId ? null : passionId)
+    }
+    setTouchStartPassion(null)
   }
+
+  // Handle tap outside to close card
+  useEffect(() => {
+    if (!isActive) return
+
+    const handleDocumentClick = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement
+      // If clicking outside pins and cards, close any open card
+      if (!target.closest('[data-interactive="true"]') && !target.closest('[data-passion-card]')) {
+        setHoveredPassion(null)
+      }
+    }
+
+    document.addEventListener('click', handleDocumentClick)
+    document.addEventListener('touchend', handleDocumentClick)
+    
+    return () => {
+      document.removeEventListener('click', handleDocumentClick)
+      document.removeEventListener('touchend', handleDocumentClick)
+    }
+  }, [isActive, hoveredPassion])
 
   const handlePinClick = (e: React.MouseEvent, passionId: string) => {
     e.stopPropagation()
-    // For mobile devices that trigger click events
+    // Toggle on click (for desktop)
     setHoveredPassion(hoveredPassion === passionId ? null : passionId)
   }
 
@@ -230,7 +261,7 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
                   onMouseLeave={() => setHoveredPassion(null)}
                   onClick={(e) => handlePinClick(e, passion.id)}
                   onTouchStart={(e) => handlePinTouchStart(e, passion.id)}
-                  onTouchEnd={handlePinTouchEnd}
+                  onTouchEnd={(e) => handlePinTouchEnd(e, passion.id)}
                 >
                   <svg
                     width="32"
@@ -258,6 +289,7 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
                 </div>
 
                 <div
+                  data-passion-card
                   className={cn(
                     "absolute z-30 w-48 md:w-56 transition-all duration-300 pointer-events-none",
                     hoveredPassion === passion.id ? "opacity-100 scale-100" : "opacity-0 scale-95",
