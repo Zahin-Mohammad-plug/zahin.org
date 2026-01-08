@@ -18,9 +18,9 @@ export default function Home() {
   const [isCinematic, setIsCinematic] = useState(false)
 
   const pageOrder: PageType[] = ["about", "passions", "projects", "stack"]
-  const CINEMATIC_DURATION = 2200
-  const CINEMATIC_SWITCH = 1900 // Swap page when overlay is nearly full screen
-  const CINEMATIC_UNVEIL = 2100 // Unveil new page just before transition ends
+  const CINEMATIC_DURATION = 2800 // Extended to allow galaxy scroll and smooth entry
+  const CINEMATIC_SWITCH = 2400 // Swap page after overlay fully fills screen and galaxy scrolls
+  const CINEMATIC_UNVEIL = 2800 // Unveil new page exactly as overlay ends
 
   const handlePageChange = useCallback(
     (newPage: PageType) => {
@@ -270,7 +270,8 @@ function CinematicOverlay() {
           transformOrigin: "center center",
           border: "3px solid #00ff00",
           boxSizing: "border-box",
-          animation: "monitor-zoom-transform 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards",
+          backgroundColor: "transparent",
+          animation: "monitor-zoom-transform 2.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards",
           // CSS custom properties for zoom animation
           ['--zoom-scale' as string]: initialPos.zoomScale || '4',
           ['--zoom-x' as string]: `${initialPos.zoomX || 0}px`,
@@ -281,25 +282,26 @@ function CinematicOverlay() {
         <div 
           className="absolute inset-0"
           style={{
-            animation: "galaxy-scroll 2.2s ease-out forwards",
+            animation: "galaxy-scroll 2.8s ease-out forwards",
           }}
         >
           <TiledBackground
             sceneReady={true}
             sizeMultiplier={1.0}
             tileOffset={0}
-            extraTiles={2}
+            extraTiles={4}
+            handleResize={true}
             className="absolute inset-0"
             imageSrc="/images/projectspagebackground.png"
           />
         </div>
 
-        {/* Monitor content (About Me text) - fades out gradually as we zoom */}
+        {/* Monitor content (About Me text) - scrolls WITH galaxy and fades out */}
         <div 
           className="absolute inset-0 flex flex-col justify-start z-10"
           style={{
             padding: "min(1.2vw, 1.1rem)",
-            animation: "fade-monitor-content 2.2s ease-out forwards",
+            animation: "fade-monitor-content 2.8s ease-out forwards, galaxy-scroll 2.8s ease-out forwards",
             opacity: 1,
           }}
         >
@@ -348,9 +350,9 @@ function CinematicOverlay() {
         
         {/* Gradient overlay that fades as we zoom - subtle, doesn't block about image */}
         <div 
-          className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent opacity-100 z-20"
+          className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent opacity-100 z-20 pointer-events-none"
           style={{
-            animation: "fade-out-gradient 2.2s ease-out forwards",
+            animation: "fade-out-gradient 2.8s ease-out forwards",
           }}
         />
       </div>

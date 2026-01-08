@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from "react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import SparkleOverlay from "@/components/sparkle-overlay"
+import TiledBackground from "@/components/tiled-background"
 
 interface PassionsPageProps {
   isActive: boolean
@@ -70,17 +71,20 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
   const [pinsVisible, setPinsVisible] = useState(false)
 
   useEffect(() => {
-    if (isActive && !isTransitioning) {
-      const revealTimer = setTimeout(() => setSceneReady(true), 180)
-      const pinsTimer = setTimeout(() => setPinsVisible(true), 650)
-      return () => {
-        clearTimeout(revealTimer)
-        clearTimeout(pinsTimer)
+    if (isActive) {
+      // Start background immediately when page becomes active (even during transition)
+      // This ensures seamless background connection during cinematic transition
+      setSceneReady(true)
+      if (!isTransitioning) {
+        const pinsTimer = setTimeout(() => setPinsVisible(true), 650)
+        return () => {
+          clearTimeout(pinsTimer)
+        }
       }
+    } else {
+      setSceneReady(false)
+      setPinsVisible(false)
     }
-
-    setSceneReady(false)
-    setPinsVisible(false)
   }, [isActive, isTransitioning])
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -107,22 +111,28 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
       )}
       style={{
         // Smooth fade in during cinematic transition from about page
-        // Starts immediately when page swaps (at 1.9s) and finishes as overlay ends (2.2s)
+        // Starts when page swaps (at 2.4s) and finishes after overlay ends (2.8s)
+        // Use slower, smoother easing for the scroll up effect
         transition: isTransitioning && transitionDirection === "in" 
-          ? "opacity 0.3s ease-out, transform 0.3s ease-out"
+          ? "opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s, transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s"
           : undefined,
       }}
     >
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-black" />
-        <div
-          className={cn(
-            "absolute inset-0 bg-[url('/images/projectspagebackground.png')] bg-[length:320px_320px] bg-repeat bg-[center_92%]",
-            sceneReady ? "animate-star-rise" : "translate-y-6 opacity-0",
-          )}
+        <TiledBackground
+          sceneReady={sceneReady}
+          sizeMultiplier={1.0}
+          tileOffset={0}
+          extraTiles={4}
+          handleResize={true}
+          className="absolute inset-0"
+          imageSrc="/images/projectspagebackground.png"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
-        <SparkleOverlay count={40} />
+        <div className={cn(
+          "absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent transition-opacity duration-500",
+          isActive ? "opacity-100" : "opacity-0"
+        )} />
+        {isActive && <SparkleOverlay count={40} />}
       </div>
 
       {/* Main content */}
