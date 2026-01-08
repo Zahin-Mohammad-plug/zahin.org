@@ -66,12 +66,13 @@ export default function TiledBackground({
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Track dimensions if handleResize is true or if we need extraSize
+  // Always initialize dimensions to viewport size for proper canvas sizing
   useEffect(() => {
+    const updateDimensions = () => {
+      setDimensions({ width: window.innerWidth, height: window.innerHeight })
+    }
+    updateDimensions()
     if (handleResize || extraSize > 0) {
-      const updateDimensions = () => {
-        setDimensions({ width: window.innerWidth, height: window.innerHeight })
-      }
-      updateDimensions()
       window.addEventListener("resize", updateDimensions)
       return () => window.removeEventListener("resize", updateDimensions)
     }

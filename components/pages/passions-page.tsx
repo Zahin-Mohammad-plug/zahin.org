@@ -111,10 +111,10 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
       )}
       style={{
         // Smooth fade in during cinematic transition from about page
-        // Starts when page swaps (at 2.4s) and finishes after overlay ends (2.8s)
+        // Starts when page swaps (at 2.8s) and finishes after overlay ends (3.2s)
         // Use slower, smoother easing for the scroll up effect
         transition: isTransitioning && transitionDirection === "in" 
-          ? "opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s, transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s"
+          ? "opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s, transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s"
           : undefined,
       }}
     >
