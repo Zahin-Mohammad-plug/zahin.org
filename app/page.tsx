@@ -93,19 +93,59 @@ export default function Home() {
   useEffect(() => {
     let touchStartY = 0
     let touchStartX = 0
-    const threshold = 50 // minimum vertical movement to trigger
+    let touchStartTime = 0
+    let isInteractingWithElement = false
+    const threshold = 120 // Increased minimum vertical movement to trigger (was 50)
+    const minSwipeTime = 150 // Minimum time for swipe (ms) to distinguish from taps
 
     const onTouchStart = (e: TouchEvent) => {
+      // Check if touch started on an interactive element or during active drag
+      const target = e.target as HTMLElement
+      const isDragging = target.closest('[data-dragging="true"]')
+      const isInteractive = target.closest('[data-interactive="true"]') || 
+                            target.closest('svg') ||
+                            target.closest('[role="button"]') ||
+                            target.closest('a') ||
+                            target.closest('[onclick]') ||
+                            // Stack page orbit area
+                            (currentPage === "stack" && target.closest('[data-interactive="true"]'))
+      
+      if (isInteractive || isDragging) {
+        isInteractingWithElement = true
+        return
+      }
+
+      isInteractingWithElement = false
       const touch = e.touches[0]
       touchStartY = touch.clientY
       touchStartX = touch.clientX
+      touchStartTime = Date.now()
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      // Check if we're dragging a card or interacting
+      const target = e.target as HTMLElement
+      const isDragging = target.closest('[data-dragging="true"]')
+      
+      if (isDragging) {
+        isInteractingWithElement = true
+        return
+      }
     }
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (isTransitioning) return
+      if (isTransitioning || isInteractingWithElement) {
+        isInteractingWithElement = false
+        return
+      }
+      
       const touch = e.changedTouches[0]
       const deltaY = touch.clientY - touchStartY
       const deltaX = Math.abs(touch.clientX - touchStartX)
+      const deltaTime = Date.now() - touchStartTime
+
+      // Require minimum swipe time to distinguish from taps/interactions
+      if (deltaTime < minSwipeTime) return
 
       // ignore mostly horizontal swipes
       if (deltaX > Math.abs(deltaY)) return
@@ -119,10 +159,12 @@ export default function Home() {
     }
 
     window.addEventListener("touchstart", onTouchStart, { passive: true })
+    window.addEventListener("touchmove", onTouchMove, { passive: true })
     window.addEventListener("touchend", onTouchEnd, { passive: true })
 
     return () => {
       window.removeEventListener("touchstart", onTouchStart)
+      window.removeEventListener("touchmove", onTouchMove)
       window.removeEventListener("touchend", onTouchEnd)
     }
   }, [currentPage, isTransitioning, handlePageChange])
@@ -146,7 +188,7 @@ export default function Home() {
   }, [currentPage, isTransitioning, handlePageChange])
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden bg-black">
+    <main className="relative h-screen w-screen overflow-hidden bg-black" style={{ WebkitOverflowScrolling: 'touch' }}>
       {/* Navigation */}
       <Navigation currentPage={currentPage} onPageChange={handlePageChange} />
 

@@ -99,6 +99,25 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
     setTilt({ x: 0, y: 0 })
   }
 
+  // Touch handler for mobile tap-to-show cards
+  const handlePinTouchStart = (e: React.TouchEvent, passionId: string) => {
+    e.stopPropagation()
+    // Don't prevent default - we want normal touch behavior
+    // Toggle card visibility on tap (like hover on desktop)
+    setHoveredPassion(hoveredPassion === passionId ? null : passionId)
+  }
+
+  const handlePinTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation()
+    // Don't prevent default
+  }
+
+  const handlePinClick = (e: React.MouseEvent, passionId: string) => {
+    e.stopPropagation()
+    // For mobile devices that trigger click events
+    setHoveredPassion(hoveredPassion === passionId ? null : passionId)
+  }
+
   return (
     <div
       className={cn(
@@ -176,32 +195,66 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
               alt="Passion house visualization"
               width={1200}
               height={800}
-              className="w-full h-auto"
+              className="w-full h-auto pointer-events-none"
               priority
+              style={{ pointerEvents: "none" }}
             />
+          </div>
 
+          {/* Pins overlay - separate layer above image */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              zIndex: 30,
+            }}
+          >
             {passions.map((passion) => (
               <div key={passion.id}>
-                {/* Pin marker */}
+                {/* Pin marker - SVG map pin like projects page */}
                 <div
-                  className="absolute cursor-pointer z-20 transition-transform duration-200 hover:scale-150"
+                  className="absolute cursor-pointer transition-transform duration-200 hover:scale-150"
+                  data-interactive="true"
                   style={{
                     top: passion.pinPosition.top,
                     left: passion.pinPosition.left,
-                    transform: "translate(-50%, -50%)",
+                    transform: "translate(-50%, -100%)",
+                    touchAction: "manipulation",
+                    pointerEvents: "auto",
+                    width: "48px",
+                    height: "48px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                   onMouseEnter={() => setHoveredPassion(passion.id)}
                   onMouseLeave={() => setHoveredPassion(null)}
+                  onClick={(e) => handlePinClick(e, passion.id)}
+                  onTouchStart={(e) => handlePinTouchStart(e, passion.id)}
+                  onTouchEnd={handlePinTouchEnd}
                 >
-                  <div
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 512 512"
                     className={cn(
-                      "w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-white shadow-lg transition-all",
+                      "transition-all drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] pointer-events-none",
                       pinsVisible ? "opacity-100 scale-100" : "opacity-0 scale-50",
-                      passion.pinColor === "orange"
-                        ? "bg-gradient-to-br from-amber-400 to-orange-500"
-                        : "bg-gradient-to-br from-sky-400 to-blue-500",
+                      pinsVisible && "animate-pulse-glow-enhanced",
+                      hoveredPassion === passion.id && "drop-shadow-[0_0_16px_currentColor]",
                     )}
-                  />
+                    style={{
+                      willChange: "transform, opacity",
+                    }}
+                  >
+                    <path
+                      d="M256,0C160.798,0,83.644,77.155,83.644,172.356c0,97.162,48.158,117.862,101.386,182.495C248.696,432.161,256,512,256,512s7.304-79.839,70.97-157.148c53.228-64.634,101.386-85.334,101.386-182.495C428.356,77.155,351.202,0,256,0z M256,231.921c-32.897,0-59.564-26.668-59.564-59.564s26.668-59.564,59.564-59.564c32.896,0,59.564,26.668,59.564,59.564S288.896,231.921,256,231.921z"
+                      className={cn(
+                        passion.pinColor === "orange"
+                          ? "fill-orange-500"
+                          : "fill-blue-500",
+                      )}
+                    />
+                  </svg>
                 </div>
 
                 <div
@@ -213,6 +266,9 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
                     top: passion.pinPosition.top,
                     left: passion.pinPosition.left,
                     transform: `translate(calc(-50% + ${passion.cardOffset.x}px), calc(-50% + ${passion.cardOffset.y}px))`,
+                    maxWidth: "calc(100vw - 2rem)",
+                    maxHeight: "calc(100vh - 8rem)",
+                    overflow: "auto",
                   }}
                 >
                   <div

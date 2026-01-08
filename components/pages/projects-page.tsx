@@ -140,6 +140,83 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
     setDragStart(null)
   }
 
+  // Track if we're actively dragging to prevent body scroll
+  const [isActivelyDragging, setIsActivelyDragging] = useState(false)
+
+  // Touch handlers for mobile drag
+  const handleTouchStart = (e: React.TouchEvent, projectId: string) => {
+    // Check if touch started on a link - allow link clicks
+    const target = e.target as HTMLElement
+    if (target.closest('a')) {
+      return // Allow link to work normally
+    }
+
+    if (e.touches.length === 1) {
+      e.stopPropagation() // Don't prevent default yet
+      setDraggingCard(projectId)
+      setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY })
+      setIsActivelyDragging(false)
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!draggingCard || !dragStart || e.touches.length !== 1) return
+    
+    // Only prevent default if we've actually moved (started dragging)
+    const deltaX = Math.abs(e.touches[0].clientX - dragStart.x)
+    const deltaY = Math.abs(e.touches[0].clientY - dragStart.y)
+    
+    if (deltaX > 5 || deltaY > 5) {
+      // User is dragging, prevent default to stop scroll
+      e.preventDefault()
+      e.stopPropagation()
+      
+      if (!isActivelyDragging) {
+        setIsActivelyDragging(true)
+        // Prevent body scroll during drag
+        document.body.style.overflow = 'hidden'
+        document.body.style.position = 'fixed'
+        document.body.style.width = '100%'
+      }
+
+      const moveDeltaX = e.touches[0].clientX - dragStart.x
+      const moveDeltaY = e.touches[0].clientY - dragStart.y
+
+      setCardPositions(prev => ({
+        ...prev,
+        [draggingCard]: {
+          x: (prev?.[draggingCard]?.x || 0) + moveDeltaX,
+          y: (prev?.[draggingCard]?.y || 0) + moveDeltaY,
+        }
+      }))
+
+      setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY })
+    }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (isActivelyDragging) {
+      e.preventDefault()
+      e.stopPropagation()
+      // Restore body scroll
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+    setDraggingCard(null)
+    setDragStart(null)
+    setIsActivelyDragging(false)
+  }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+  }, [])
+
   return (
     <div
       className={cn(
@@ -186,6 +263,9 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ touchAction: draggingCard ? "none" : "auto" }}
       >
         {/* Title badge */}
         <div
@@ -230,13 +310,24 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
               <div
                 key={project.id}
                 className="absolute z-20 cursor-pointer transition-all duration-200 hover:scale-110"
+                data-interactive="true"
                 style={{ 
                   top: project.pinPosition.top, 
                   left: project.pinPosition.left,
                   transform: "translate(-50%, -100%)",
+                  touchAction: "manipulation",
+                  pointerEvents: "auto",
                 }}
                 onMouseEnter={() => setHoveredProject(project.id)}
                 onMouseLeave={() => setHoveredProject(null)}
+                onTouchStart={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                }}
               >
                 <svg
                   width="32"
@@ -280,14 +371,27 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
                     "absolute z-30",
                     draggingCard === project.id ? "cursor-grabbing" : "cursor-grab"
                   )}
+                  data-interactive="true"
+                  data-dragging={isActivelyDragging && draggingCard === project.id ? "true" : "false"}
                   style={{
                     top: project.pinPosition.top,
                     left: project.pinPosition.left,
                     transform: `translate(${cardOffsetX + dragOffset.x}px, ${cardOffsetY + dragOffset.y}px)`,
+                    touchAction: draggingCard === project.id ? "none" : "manipulation",
+                    maxWidth: "calc(100vw - 2rem)",
+                    pointerEvents: "auto",
                   }}
                   onMouseEnter={() => setHoveredProject(project.id)}
                   onMouseLeave={() => setHoveredProject(null)}
-                  onMouseDown={(e) => handleMouseDown(e, project.id)}
+                  onMouseDown={(e) => {
+                    // Don't start drag if clicking on a link
+                    if ((e.target as HTMLElement).closest('a')) {
+                      return
+                    }
+                    handleMouseDown(e, project.id)
+                  }}
+                  onTouchStart={(e) => handleTouchStart(e, project.id)}
+                  onTouchEnd={handleTouchEnd}
                 >
                   <div
                     className={cn(
@@ -307,13 +411,25 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
 
                     {/* Content always visible */}
                     <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-2">
-                      <p className="text-xs sm:text-sm lg:text-base text-gray-200 leading-relaxed">{project.description}</p>
+                      <p className="text-xs sm:text-sm lg:text-base text-gray-200 leading-relaxed break-words">{project.description}</p>
                       {project.link && (
                         <a
                           href={project.link}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 text-amber-400 text-xs sm:text-sm lg:text-base font-medium hover:text-amber-300 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            // Allow normal link behavior
+                          }}
+                          onTouchStart={(e) => {
+                            e.stopPropagation()
+                            // Prevent drag when touching link
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation()
+                            // Prevent drag when clicking link
+                          }}
                         >
                           {project.linkText}
                           <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" />

@@ -110,6 +110,35 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Hide scrollbars on mobile while maintaining scroll functionality */
+  @media (max-width: 768px) {
+    body {
+      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none; /* Firefox */
+    }
+    body::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+  }
+}
+
+/* Prevent image selection to avoid interference with dragging */
+img,
+[role="img"],
+.next-image-wrapper img,
+img[src*="/images/"] {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  pointer-events: auto;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
 }
 
 /* Custom animations for portfolio */

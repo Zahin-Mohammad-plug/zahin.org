@@ -196,6 +196,7 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
 
   const handleDragEnd = () => {
     setIsDragging(false)
+    setPinchStartDistance(null)
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -209,16 +210,59 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
     handleDragMove(e.clientX, e.clientY)
   }
 
+  const [pinchStartDistance, setPinchStartDistance] = useState<number | null>(null)
+  const [pinchStartZoom, setPinchStartZoom] = useState(1)
+
+  const getDistance = (touch1: React.Touch, touch2: React.Touch) => {
+    const dx = touch2.clientX - touch1.clientX
+    const dy = touch2.clientY - touch1.clientY
+    return Math.sqrt(dx * dx + dy * dy)
+  }
+
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
+    if (e.touches.length === 2) {
+      // Pinch to zoom
+      e.preventDefault()
+      e.stopPropagation()
+      const distance = getDistance(e.touches[0], e.touches[1])
+      setPinchStartDistance(distance)
+      setPinchStartZoom(zoom)
+      setIsDragging(false)
+    } else if (e.touches.length === 1) {
+      // Single touch drag
+      e.preventDefault()
+      e.stopPropagation()
       handleDragStart(e.touches[0].clientX, e.touches[0].clientY)
     }
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
+    if (e.touches.length === 2 && pinchStartDistance !== null) {
+      // Pinch zoom
+      e.preventDefault()
+      e.stopPropagation()
+      const distance = getDistance(e.touches[0], e.touches[1])
+      const scale = distance / pinchStartDistance
+      const newZoom = Math.max(0.5, Math.min(2.5, pinchStartZoom * scale))
+      setZoom(newZoom)
+    } else if (e.touches.length === 1 && isDragging) {
+      // Single touch drag
+      e.preventDefault()
+      e.stopPropagation()
       handleDragMove(e.touches[0].clientX, e.touches[0].clientY)
+    } else if (e.touches.length === 1) {
+      // Prevent page scroll when interacting with stack
+      e.preventDefault()
+      e.stopPropagation()
     }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (isDragging || pinchStartDistance !== null) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    handleDragEnd()
   }
 
   // Zone-based orbit detection accounting for zoom and pan
@@ -355,14 +399,16 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
         transition: isTransitioning && transitionDirection === "in" 
           ? "opacity 1.5s ease-out 0.7s, transform 1.5s ease-out 0.7s"
           : undefined,
+        touchAction: "none", // Allow pinch zoom and pan
       }}
+      data-interactive="true"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleDragEnd}
       onMouseLeave={handleDragEnd}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
-      onTouchEnd={handleDragEnd}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Background without parallax */}
       <div className={cn(
@@ -390,12 +436,14 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
         <div
           ref={orbitsRef}
           className="relative transition-transform duration-200 ease-out pointer-events-auto"
+          data-interactive="true"
           style={{
             width: "min(90vw, 800px)",
             height: "min(90vw, 800px)",
             transform: `scale(${zoom * entranceScale}) translate(${panOffset.x / zoom}px, ${panOffset.y / zoom}px)`,
             opacity: entranceScale,
             willChange: "transform, opacity",
+            touchAction: "none",
           }}
           onMouseMove={handleOrbitMouseMove}
           onMouseEnter={() => setIsOverOrbitArea(true)}
