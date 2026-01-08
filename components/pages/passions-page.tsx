@@ -103,8 +103,15 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
           ? "opacity-100 translate-y-0 z-10"
           : transitionDirection === "out"
             ? "opacity-0 -translate-y-full pointer-events-none z-0"
-            : "opacity-0 translate-y-full pointer-events-none z-0",
+            : "opacity-0 translate-y-[100%] pointer-events-none z-0",
       )}
+      style={{
+        // Smooth fade in during cinematic transition from about page
+        // Starts immediately when page swaps (at 1.9s) and finishes as overlay ends (2.2s)
+        transition: isTransitioning && transitionDirection === "in" 
+          ? "opacity 0.3s ease-out, transform 0.3s ease-out"
+          : undefined,
+      }}
     >
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-black" />

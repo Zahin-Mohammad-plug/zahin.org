@@ -93,9 +93,15 @@ export default function AboutPage({ isActive, isTransitioning, transitionDirecti
         isActive && !isTransitioning
           ? "opacity-100 scale-100 z-10"
           : transitionDirection === "out"
-            ? "opacity-0 scale-110 pointer-events-none z-0"
+            ? "opacity-100 scale-100 pointer-events-none z-0"
             : "opacity-0 scale-90 pointer-events-none z-0",
       )}
+      style={{
+        // Keep about page visible during cinematic transition until overlay fills screen
+        transition: isTransitioning && transitionDirection === "out"
+          ? "opacity 0s, transform 0s"
+          : undefined,
+      }}
     >
       {/* Container that maintains image aspect ratio (1536x1024 = 3:2) and centers it */}
       <div className="absolute inset-0 overflow-hidden">

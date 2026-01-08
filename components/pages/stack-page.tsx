@@ -347,9 +347,15 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
           ? "opacity-100 translate-y-0 z-10"
           : transitionDirection === "out"
             ? "opacity-0 scale-150 pointer-events-none z-0"
-            : "opacity-0 translate-y-[30%] pointer-events-none z-0",
+            : "opacity-0 translate-y-[20%] pointer-events-none z-0",
         isDragging ? "cursor-grabbing" : zoom > 1 || isMobile ? "cursor-grab" : "",
       )}
+      style={{
+        // Smooth fade in during cinematic transition from about page
+        transition: isTransitioning && transitionDirection === "in" 
+          ? "opacity 1.5s ease-out 0.7s, transform 1.5s ease-out 0.7s"
+          : undefined,
+      }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleDragEnd}
