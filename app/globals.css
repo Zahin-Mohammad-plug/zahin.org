@@ -251,14 +251,3 @@
 .scale-200 {
   transform: scale(2);
 }
-
-/* Prevent image selection for better immersion */
-img, canvas {
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  pointer-events: auto;
-  -webkit-user-drag: none;
-  -webkit-touch-callout: none;
-}

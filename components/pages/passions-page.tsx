@@ -2,12 +2,10 @@
 
 import type React from "react"
 
-import { useEffect, useState, useRef, useMemo } from "react"
+import { useEffect, useState, useRef } from "react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import SparkleOverlay from "@/components/sparkle-overlay"
-import TiledBackground from "@/components/tiled-background"
-import { TRANSITION_CONSTANTS } from "@/constants/transitions"
 
 interface PassionsPageProps {
   isActive: boolean
@@ -24,7 +22,6 @@ interface Passion {
   cardOffset: { x: number; y: number }
   pinColor: "orange" | "blue"
 }
-
 
 const passions: Passion[] = [
   {
@@ -70,43 +67,20 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
   const [sceneReady, setSceneReady] = useState(false)
-  const [pinsVisible, setPinsVisible] = useState<Record<string, boolean>>({})
-  const [isMobile, setIsMobile] = useState(false)
+  const [pinsVisible, setPinsVisible] = useState(false)
 
   useEffect(() => {
-    // Check if mobile
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < TRANSITION_CONSTANTS.MOBILE_BREAKPOINT)
-    }
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
-
-  useEffect(() => {
-    // Only set scene ready when page is active and not transitioning
     if (isActive && !isTransitioning) {
-      const revealTimer = setTimeout(() => setSceneReady(true), TRANSITION_CONSTANTS.SCENE_REVEAL_DELAY)
-      
-      // Stagger pin appearance
-      const pinTimers: NodeJS.Timeout[] = []
-      passions.forEach((passion, index) => {
-        const delay = TRANSITION_CONSTANTS.PINS_REVEAL_DELAY + index * TRANSITION_CONSTANTS.PIN_STAGGER_DELAY
-        const timer = setTimeout(() => {
-          setPinsVisible((prev) => ({ ...prev, [passion.id]: true }))
-        }, delay)
-        pinTimers.push(timer)
-      })
-      
+      const revealTimer = setTimeout(() => setSceneReady(true), 180)
+      const pinsTimer = setTimeout(() => setPinsVisible(true), 650)
       return () => {
         clearTimeout(revealTimer)
-        pinTimers.forEach(clearTimeout)
+        clearTimeout(pinsTimer)
       }
     }
 
-    // Reset scene state when page becomes inactive
     setSceneReady(false)
-    setPinsVisible({})
+    setPinsVisible(false)
   }, [isActive, isTransitioning])
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -125,31 +99,22 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
     <div
       className={cn(
         "absolute inset-0 transition-all duration-700 ease-in-out",
-        isActive
+        isActive && !isTransitioning
           ? "opacity-100 translate-y-0 z-10"
           : transitionDirection === "out"
-            ? "opacity-0 -translate-y-[30%] pointer-events-none z-0"
+            ? "opacity-0 -translate-y-full pointer-events-none z-0"
             : "opacity-0 translate-y-full pointer-events-none z-0",
       )}
-      style={{
-        // Ensure passions page is ready behind cinematic overlay
-        zIndex: isActive ? 10 : isTransitioning && transitionDirection === "in" ? 5 : 0,
-      }}
     >
-      <div className={cn(
-        "absolute inset-0 overflow-hidden transition-opacity duration-300",
-        isActive && !isTransitioning ? "opacity-100" : "opacity-0"
-      )}>
+      <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-black" />
-        <TiledBackground
-          sceneReady={sceneReady}
-          sizeMultiplier={1.0}
-          tileOffset={-320}
-          extraTiles={2}
-          className="absolute inset-0"
-          parallaxSpeed={TRANSITION_CONSTANTS.PARALLAX_BACKGROUND_OFFSET}
+        <div
+          className={cn(
+            "absolute inset-0 bg-[url('/images/projectspagebackground.png')] bg-[length:320px_320px] bg-repeat bg-[center_92%]",
+            sceneReady ? "animate-star-rise" : "translate-y-6 opacity-0",
+          )}
         />
-        <div className="absolute inset-0 bg-black/70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
         <SparkleOverlay count={40} />
       </div>
 
@@ -174,28 +139,19 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
 
         <div
           ref={containerRef}
-          className={cn(
-            "relative mt-16",
-            sceneReady && "animate-slide-up-fade"
-          )}
+          className="relative mt-16"
           style={{
             width: "min(80vw, 650px)",
             perspective: "1000px",
-            willChange: "transform",
           }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
           <div
-            className={cn(
-              "relative transition-transform duration-200 ease-out",
-              !isMobile && sceneReady && "animate-float-gentle"
-            )}
+            className="relative transition-transform duration-200 ease-out"
             style={{
               transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
               transformStyle: "preserve-3d",
-              filter: sceneReady ? "drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5))" : "none",
-              willChange: "transform, filter",
             }}
           >
             <Image
@@ -223,23 +179,18 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
                   <div
                     className={cn(
                       "w-4 h-4 md:w-5 md:h-5 rounded-full border-2 border-white shadow-lg transition-all",
-                      pinsVisible[passion.id] ? "opacity-100 scale-100" : "opacity-0 scale-50",
-                      pinsVisible[passion.id] && "animate-pulse-glow-enhanced",
-                      hoveredPassion === passion.id && "ring-2 ring-white/50 ring-offset-2 ring-offset-transparent",
+                      pinsVisible ? "opacity-100 scale-100" : "opacity-0 scale-50",
                       passion.pinColor === "orange"
                         ? "bg-gradient-to-br from-amber-400 to-orange-500"
                         : "bg-gradient-to-br from-sky-400 to-blue-500",
                     )}
-                    style={{
-                      willChange: "transform, opacity",
-                    }}
                   />
                 </div>
 
                 <div
                   className={cn(
-                    "absolute z-50 transition-all duration-300",
-                    hoveredPassion === passion.id ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none",
+                    "absolute z-30 w-48 md:w-56 transition-all duration-300 pointer-events-none",
+                    hoveredPassion === passion.id ? "opacity-100 scale-100" : "opacity-0 scale-95",
                   )}
                   style={{
                     top: passion.pinPosition.top,
@@ -249,24 +200,19 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
                 >
                   <div
                     className={cn(
-                      "w-64 sm:w-72 lg:w-80 backdrop-blur-md rounded-xl transition-all duration-300",
-                      "bg-slate-900/75 shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
-                      passion.pinColor === "orange"
-                        ? "border border-orange-500/30"
-                        : "border border-blue-500/30",
+                      "bg-slate-900/95 backdrop-blur-sm border rounded-xl p-3 shadow-xl",
+                      passion.pinColor === "orange" ? "border-amber-500/40" : "border-blue-500/40",
                     )}
                   >
-                    {/* Title */}
-                    <div className="px-3 sm:px-4 py-2.5 sm:py-3">
-                      <h3 className="font-serif text-lg sm:text-xl lg:text-2xl font-bold text-white leading-tight">
-                        {passion.title}
-                      </h3>
-                    </div>
-
-                    {/* Content */}
-                    <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-                      <p className="text-xs sm:text-sm lg:text-base text-gray-200 leading-relaxed">{passion.description}</p>
-                    </div>
+                    <h3
+                      className={cn(
+                        "font-serif text-base md:text-lg font-bold mb-1.5 italic",
+                        passion.pinColor === "orange" ? "text-amber-400" : "text-sky-400",
+                      )}
+                    >
+                      {passion.title}
+                    </h3>
+                    <p className="text-xs md:text-sm text-gray-300 leading-relaxed">{passion.description}</p>
                   </div>
                 </div>
               </div>
