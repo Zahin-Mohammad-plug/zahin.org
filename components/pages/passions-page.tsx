@@ -299,7 +299,7 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
                     left: passion.pinPosition.left,
                     transform: `translate(calc(-50% + ${passion.cardOffset.x}px), calc(-50% + ${passion.cardOffset.y}px))`,
                     maxWidth: "calc(100vw - 2rem)",
-                    maxHeight: "calc(100vh - 8rem)",
+                    maxHeight: "calc(100dvh - 8rem)",
                     overflow: "auto",
                   }}
                 >

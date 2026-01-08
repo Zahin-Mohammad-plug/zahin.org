@@ -204,7 +204,12 @@ export default function Home() {
   }, [currentPage, isTransitioning, handlePageChange])
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden bg-black" style={{ WebkitOverflowScrolling: 'touch' }}>
+    <main 
+      className="relative w-screen overflow-hidden bg-black" 
+      style={{ 
+        height: '100%', // Inherits from body which uses 100dvh with fallback
+      }}
+    >
       {/* Navigation */}
       <Navigation currentPage={currentPage} onPageChange={handlePageChange} />
 

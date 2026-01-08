@@ -107,19 +107,36 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
+  
+  /* Lock viewport - prevent body scroll while allowing touch events */
+  html {
+    overflow: hidden;
+    height: 100%;
   }
   
-  /* Hide scrollbars on mobile while maintaining scroll functionality */
-  @media (max-width: 768px) {
-    body {
-      -ms-overflow-style: none; /* IE and Edge */
-      scrollbar-width: none; /* Firefox */
+  body {
+    @apply bg-background text-foreground;
+    height: 100%;
+    overflow: hidden;
+    /* Prevent pull-to-refresh and overscroll bounce */
+    overscroll-behavior: none;
+    position: relative;
+  }
+  
+  /* Use dynamic viewport height for mobile Safari */
+  @supports (height: 100dvh) {
+    html, body {
+      height: 100dvh;
     }
-    body::-webkit-scrollbar {
-      display: none; /* Chrome, Safari, Opera */
-    }
+  }
+  
+  /* Hide scrollbars on all screen sizes */
+  body {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
   }
 }
 
