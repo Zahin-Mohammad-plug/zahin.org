@@ -8,19 +8,42 @@ import PassionsPage from "@/components/pages/passions-page"
 import ProjectsPage from "@/components/pages/projects-page"
 import StackPage from "@/components/pages/stack-page"
 import TiledBackground from "@/components/tiled-background"
+import { DEPTH_TRANSITIONS } from "@/constants/transitions"
+import { useSpatialTransition } from "@/hooks/use-spatial-transition"
 
 type PageType = "about" | "passions" | "projects" | "stack"
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<PageType>("about")
+  const [previousPage, setPreviousPage] = useState<PageType | null>(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionDirection, setTransitionDirection] = useState<"in" | "out">("in")
   const [isCinematic, setIsCinematic] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
   const pageOrder: PageType[] = ["about", "passions", "projects", "stack"]
-  const CINEMATIC_DURATION = 3200 // Extended to allow galaxy scroll and smooth entry
-  const CINEMATIC_SWITCH = 3000 // Swap page after overlay fully fills screen and galaxy scrolls (before overlay ends)
-  const CINEMATIC_UNVEIL = 3200 // Unveil new page exactly as overlay ends
+  
+  // Detect reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
+    setPrefersReducedMotion(mediaQuery.matches)
+    
+    const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
+    mediaQuery.addEventListener("change", handleChange)
+    return () => mediaQuery.removeEventListener("change", handleChange)
+  }, [])
+
+  // Use spatial transition hook for parallax synchronization
+  const { transitionProgress, contentTransform, parallaxOffset, config } = useSpatialTransition({
+    fromPage: previousPage,
+    toPage: currentPage,
+    isTransitioning,
+    prefersReducedMotion,
+  })
+
+  // Get current grid density
+  const currentGridDensity = DEPTH_TRANSITIONS.GRID_DENSITIES[currentPage]
+  const previousGridDensity = previousPage ? DEPTH_TRANSITIONS.GRID_DENSITIES[previousPage] : currentGridDensity
 
   const handlePageChange = useCallback(
     (newPage: PageType) => {
@@ -28,40 +51,81 @@ export default function Home() {
 
       const currentIndex = pageOrder.indexOf(currentPage)
       const newIndex = pageOrder.indexOf(newPage)
+      const distance = Math.abs(newIndex - currentIndex)
 
-      // Cinematic hand-off from About -> any galaxy page (passions, projects, stack)
-      if (currentPage === "about" && (newPage === "passions" || newPage === "projects" || newPage === "stack")) {
+      // Track previous page for transition system
+      setPreviousPage(currentPage)
+
+      // Special: About → Passions (monitor zoom portal - two-phase)
+      if (currentPage === "about" && newPage === "passions") {
         setIsCinematic(true)
         setTransitionDirection("out")
         setIsTransitioning(true)
 
-        // Keep about page visible until overlay is nearly full screen, then swap
+        // Phase 1: Monitor zoom (existing cinematic code handles this)
+        // Phase 2: Page swap and galaxy entry
+        const phase2Delay = prefersReducedMotion ? 500 : 600
+        
         setTimeout(() => {
           setCurrentPage(newPage)
           setTransitionDirection("in")
-        }, CINEMATIC_SWITCH)
+        }, phase2Delay)
 
-        // Allow next page to render behind the overlay before it lifts
         setTimeout(() => {
           setIsTransitioning(false)
-        }, CINEMATIC_UNVEIL)
+        }, DEPTH_TRANSITIONS.ADJACENT_DURATION + phase2Delay)
 
         setTimeout(() => {
           setIsCinematic(false)
-        }, CINEMATIC_DURATION)
+        }, DEPTH_TRANSITIONS.ADJACENT_DURATION + phase2Delay + 200)
 
         return
       }
 
+      // Cinematic hand-off from About -> other galaxy pages (projects, stack)
+      if (currentPage === "about" && (newPage === "projects" || newPage === "stack")) {
+        setIsCinematic(true)
+        setTransitionDirection("out")
+        setIsTransitioning(true)
+
+        const switchDelay = prefersReducedMotion ? 500 : 600
+        const duration = distance === 2 
+          ? DEPTH_TRANSITIONS.FULL_JOURNEY_DURATION 
+          : DEPTH_TRANSITIONS.SKIP_DURATION
+
+        setTimeout(() => {
+          setCurrentPage(newPage)
+          setTransitionDirection("in")
+        }, switchDelay)
+
+        setTimeout(() => {
+          setIsTransitioning(false)
+        }, duration)
+
+        setTimeout(() => {
+          setIsCinematic(false)
+        }, duration + 200)
+
+        return
+      }
+
+      // Standard transitions
       setTransitionDirection(newIndex > currentIndex ? "out" : "in")
       setIsTransitioning(true)
 
+      const duration = distance > 1
+        ? (distance === 2 ? DEPTH_TRANSITIONS.FULL_JOURNEY_DURATION : DEPTH_TRANSITIONS.SKIP_DURATION)
+        : DEPTH_TRANSITIONS.ADJACENT_DURATION
+
       setTimeout(() => {
         setCurrentPage(newPage)
+      }, prefersReducedMotion ? 100 : duration * 0.5) // Quick swap for reduced motion
+
+      setTimeout(() => {
         setIsTransitioning(false)
-      }, 700)
+      }, prefersReducedMotion ? 300 : duration)
     },
-    [currentPage, isTransitioning],
+    [currentPage, isTransitioning, prefersReducedMotion],
   )
 
   useEffect(() => {
@@ -222,21 +286,49 @@ export default function Home() {
           isActive={currentPage === "about"}
           isTransitioning={isTransitioning && (currentPage === "about" || transitionDirection === "out")}
           transitionDirection={currentPage === "about" ? transitionDirection : "in"}
+          gridDensity={currentGridDensity}
+          transitionGridDensity={config?.toDensity}
+          transitionProgress={transitionProgress}
+          parallaxMultiplier={config?.parallaxMultiplier || 1}
+          parallaxOffset={parallaxOffset}
+          isSkipTransition={config?.isSkip || false}
+          contentTransform={contentTransform}
         />
         <PassionsPage
           isActive={currentPage === "passions"}
           isTransitioning={isTransitioning && (currentPage === "passions" || transitionDirection === "out")}
           transitionDirection={currentPage === "passions" ? transitionDirection : "in"}
+          gridDensity={currentGridDensity}
+          transitionGridDensity={config?.toDensity}
+          transitionProgress={transitionProgress}
+          parallaxMultiplier={config?.parallaxMultiplier || 1}
+          parallaxOffset={parallaxOffset}
+          isSkipTransition={config?.isSkip || false}
+          contentTransform={contentTransform}
         />
         <ProjectsPage
           isActive={currentPage === "projects"}
           isTransitioning={isTransitioning && (currentPage === "projects" || transitionDirection === "out")}
           transitionDirection={currentPage === "projects" ? transitionDirection : "in"}
+          gridDensity={currentGridDensity}
+          transitionGridDensity={config?.toDensity}
+          transitionProgress={transitionProgress}
+          parallaxMultiplier={config?.parallaxMultiplier || 1}
+          parallaxOffset={parallaxOffset}
+          isSkipTransition={config?.isSkip || false}
+          contentTransform={contentTransform}
         />
         <StackPage
           isActive={currentPage === "stack"}
           isTransitioning={isTransitioning && (currentPage === "stack" || transitionDirection === "out")}
           transitionDirection={currentPage === "stack" ? transitionDirection : "in"}
+          gridDensity={currentGridDensity}
+          transitionGridDensity={config?.toDensity}
+          transitionProgress={transitionProgress}
+          parallaxMultiplier={config?.parallaxMultiplier || 1}
+          parallaxOffset={parallaxOffset}
+          isSkipTransition={config?.isSkip || false}
+          contentTransform={contentTransform}
         />
       </div>
 
@@ -331,8 +423,6 @@ function CinematicOverlay() {
           width: `${initialPos.width}px`,
           height: `${initialPos.height}px`,
           transformOrigin: "center center",
-          border: "3px solid #00ff00",
-          boxSizing: "border-box",
           backgroundColor: "transparent",
           animation: "monitor-zoom-transform 3.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards",
           // CSS custom properties for zoom animation
@@ -364,15 +454,15 @@ function CinematicOverlay() {
             handleResize={false}
             className="absolute inset-0"
             imageSrc="/images/projectspagebackground.png"
+            gridDensity={1}
           />
         </div>
 
-        {/* Monitor content (About Me text) - scrolls WITH galaxy and fades out */}
+        {/* Monitor content (About Me text) - scrolls WITH galaxy and stays visible */}
         <div 
           className="absolute inset-0 flex flex-col justify-start z-10"
           style={{
             padding: "min(1.2vw, 1.1rem)",
-            animation: "fade-monitor-content 3.2s ease-out forwards",
             opacity: 1,
             transform: `translate(${-initialPos.left}px, ${-initialPos.top}px) scale(${1 / (initialPos.zoomScale || 4)})`,
             transformOrigin: "center center",

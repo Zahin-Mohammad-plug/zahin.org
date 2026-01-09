@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import SparkleOverlay from "@/components/sparkle-overlay"
@@ -13,6 +13,13 @@ interface StackPageProps {
   isActive: boolean
   isTransitioning: boolean
   transitionDirection?: "in" | "out"
+  gridDensity?: 1 | 2 | 4 | 8
+  transitionGridDensity?: 1 | 2 | 4 | 8
+  transitionProgress?: number
+  parallaxMultiplier?: number
+  parallaxOffset?: { x: number; y: number }
+  isSkipTransition?: boolean
+  contentTransform?: { scale: number; x: number; y: number }
 }
 
 
@@ -84,9 +91,21 @@ const orbitLabels = {
   outer: "Tools",
 }
 
-export default function StackPage({ isActive, isTransitioning, transitionDirection }: StackPageProps) {
+export default function StackPage({
+  isActive,
+  isTransitioning,
+  transitionDirection,
+  gridDensity = 8,
+  transitionGridDensity,
+  transitionProgress = 0,
+  parallaxMultiplier = 2.0,
+  parallaxOffset = { x: 0, y: 0 },
+  isSkipTransition = false,
+  contentTransform = { scale: 1, x: 0, y: 0 },
+}: StackPageProps) {
   const [hoveredTech, setHoveredTech] = useState<string | null>(null)
   const [hoveredOrbit, setHoveredOrbit] = useState<string | null>(null)
+  const [hoveredCore, setHoveredCore] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [sceneReady, setSceneReady] = useState(false)
   const [zoom, setZoom] = useState(1)
@@ -99,32 +118,61 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
   const containerRef = useRef<HTMLDivElement>(null)
   const orbitsRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    setMounted(true)
-    // Check mobile status on mount
-    if (typeof window !== "undefined") {
-      setIsMobile(window.innerWidth < 768)
-      // Calculate responsive radii after mount
-      const vw = Math.min(window.innerWidth, 1200)
-      setRadii({
-        inner: (95 * vw) / 1200,
-        middle: (175 * vw) / 1200,
-        outer: (270 * vw) / 1200,
-      })
-    }
+  // Function to update radii based on actual container size
+  const updateRadii = useCallback(() => {
+    if (!orbitsRef.current || typeof window === "undefined") return
+    
+    const width = window.innerWidth
+    setIsMobile(width < 768)
+    
+    // Use actual rendered container size for precise calculations
+    const rect = orbitsRef.current.getBoundingClientRect()
+    const containerSize = rect.width || Math.min(width * 0.9, 800)
+    
+    // Orbit rings are 30%, 55%, 85% of container, so radii are half of those percentages
+    // Inner: 30% / 2 = 15% of container, Middle: 55% / 2 = 27.5%, Outer: 85% / 2 = 42.5%
+    setRadii({
+      inner: containerSize * 0.15,
+      middle: containerSize * 0.275,
+      outer: containerSize * 0.425,
+    })
   }, [])
 
-  // Track window width changes for mobile detection
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Update radii when scene is ready and container is available
+  useEffect(() => {
+    if (sceneReady && orbitsRef.current && isActive) {
+      // Small delay to ensure container is fully rendered
+      const timer = setTimeout(() => {
+        updateRadii()
+      }, 50)
+      return () => clearTimeout(timer)
+    }
+  }, [sceneReady, isActive, updateRadii])
+
+  // Track window width changes for mobile detection and update radii
   useEffect(() => {
     if (typeof window === "undefined") return
 
+    let resizeTimer: NodeJS.Timeout | null = null
+    
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
+      // Debounce resize to avoid excessive recalculations
+      if (resizeTimer) clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(() => {
+        updateRadii()
+      }, 100)
     }
 
     window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    return () => {
+      window.removeEventListener("resize", handleResize)
+      if (resizeTimer) clearTimeout(resizeTimer)
+    }
+  }, [updateRadii])
 
   useEffect(() => {
     // Only set scene ready when page is active and not transitioning
@@ -180,35 +228,35 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
     return () => container.removeEventListener("wheel", handleWheel)
   }, [isActive, isOverOrbitArea, hoveredTech])
 
-  // Mouse/touch drag handlers for panning
-  const handleDragStart = (clientX: number, clientY: number) => {
+  // Mouse/touch drag handlers for panning - memoized to prevent unnecessary re-renders
+  const handleDragStart = useCallback((clientX: number, clientY: number) => {
     setIsDragging(true)
     setDragStart({ x: clientX - panOffset.x, y: clientY - panOffset.y })
-  }
+  }, [panOffset])
 
-  const handleDragMove = (clientX: number, clientY: number) => {
+  const handleDragMove = useCallback((clientX: number, clientY: number) => {
     if (!isDragging) return
     setPanOffset({
       x: clientX - dragStart.x,
       y: clientY - dragStart.y,
     })
-  }
+  }, [isDragging, dragStart])
 
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     setIsDragging(false)
     setPinchStartDistance(null)
-  }
+  }, [])
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     // Only allow dragging when zoomed in or on mobile
     if (zoom > 1 || isMobile) {
       handleDragStart(e.clientX, e.clientY)
     }
-  }
+  }, [zoom, isMobile, handleDragStart])
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
     handleDragMove(e.clientX, e.clientY)
-  }
+  }, [handleDragMove])
 
   const [pinchStartDistance, setPinchStartDistance] = useState<number | null>(null)
   const [pinchStartZoom, setPinchStartZoom] = useState(1)
@@ -219,7 +267,7 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
     return Math.sqrt(dx * dx + dy * dy)
   }
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
       // Pinch to zoom
       e.preventDefault()
@@ -234,9 +282,9 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
       e.stopPropagation()
       handleDragStart(e.touches[0].clientX, e.touches[0].clientY)
     }
-  }
+  }, [zoom, handleDragStart])
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2 && pinchStartDistance !== null) {
       // Pinch zoom
       e.preventDefault()
@@ -255,19 +303,36 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
       e.preventDefault()
       e.stopPropagation()
     }
-  }
+  }, [pinchStartDistance, pinchStartZoom, isDragging, handleDragMove])
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (isDragging || pinchStartDistance !== null) {
       e.preventDefault()
       e.stopPropagation()
     }
     handleDragEnd()
+  }, [isDragging, pinchStartDistance, handleDragEnd])
+
+  // Helper function to get orbit key for a tech name
+  const getOrbitForTech = (techName: string): string | null => {
+    if (techStack.inner.some(tech => tech.name === techName)) return "inner"
+    if (techStack.middle.some(tech => tech.name === techName)) return "middle"
+    if (techStack.outer.some(tech => tech.name === techName)) return "outer"
+    return null
   }
 
   // Zone-based orbit detection accounting for zoom and pan
   const handleOrbitMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!orbitsRef.current) return
+
+    // If a tech item is hovered, use its orbit instead of distance-based calculation
+    if (hoveredTech) {
+      const orbit = getOrbitForTech(hoveredTech)
+      if (orbit) {
+        setHoveredOrbit(orbit)
+        return
+      }
+    }
 
     const rect = orbitsRef.current.getBoundingClientRect()
     const centerX = rect.left + rect.width / 2
@@ -302,7 +367,8 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
 
   useEffect(() => {
     // Only run animations when page is active, not transitioning, and mounted (client-side)
-    if (!isActive || isTransitioning || !mounted) return
+    // Pause when core is hovered
+    if (!isActive || isTransitioning || !mounted || hoveredCore) return
 
     const interval = setInterval(() => {
       setRotations((prev) => ({
@@ -313,7 +379,7 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
     }, 50)
 
     return () => clearInterval(interval)
-  }, [isActive, isTransitioning, mounted])
+  }, [isActive, isTransitioning, mounted, hoveredCore])
 
 
   const renderOrbitItems = (items: TechItem[], radius: number, rotation: number, orbitKey: string) => {
@@ -338,13 +404,19 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
             transform: "translate(-50%, -50%)",
             zIndex: hoveredTech === tech.name ? 60 : 50,
           }}
-          onMouseEnter={() => setHoveredTech(tech.name)}
-          onMouseLeave={() => setHoveredTech(null)}
+          onMouseEnter={() => {
+            setHoveredTech(tech.name)
+            setHoveredOrbit(orbitKey)
+          }}
+          onMouseLeave={() => {
+            setHoveredTech(null)
+            // Don't clear orbit here - let handleOrbitMouseMove update it based on mouse position
+          }}
         >
           {/* Subtle trail effect */}
           {hoveredTech === tech.name && (
             <div
-              className="absolute -z-10 w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full animate-orbit-trail"
+              className="absolute -z-10 w-6 h-6 sm:w-7 sm:h-7 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full animate-orbit-trail"
               style={{
                 background: `radial-gradient(circle, ${orbitKey === "inner" ? "rgba(168, 85, 247, 0.15)" : orbitKey === "middle" ? "rgba(59, 130, 246, 0.15)" : "rgba(16, 185, 129, 0.15)"}, transparent)`,
                 transform: "translate(-50%, -50%)",
@@ -353,8 +425,8 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
           )}
           <div
             className={cn(
-              "w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full cursor-pointer transition-all duration-200 flex items-center justify-center",
-              tech.hasDarkIcon ? "bg-white/90 p-1.5" : "bg-transparent",
+              "w-6 h-6 sm:w-7 sm:h-7 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full cursor-pointer transition-all duration-200 flex items-center justify-center",
+              tech.hasDarkIcon ? "bg-white/90 p-1 sm:p-1.5" : "bg-transparent",
               hoveredTech === tech.name && "scale-150",
             )}
             style={{
@@ -416,19 +488,28 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
         isActive && !isTransitioning ? "opacity-100" : "opacity-0"
       )}>
         <div className="absolute inset-0 bg-black" />
-        <div className="absolute inset-[-60px]">
+        {/* Increased buffer on mobile to ensure full coverage */}
+        <div className={cn(
+          "absolute",
+          isMobile ? "inset-[-100px]" : "inset-[-60px]"
+        )}>
           <TiledBackground
             sceneReady={sceneReady}
             sizeMultiplier={1.0}
-            extraSize={200}
+            extraSize={isMobile ? 300 : 200}
             tileOffset={-640}
-            extraTiles={4}
+            extraTiles={isMobile ? 6 : 4}
             handleResize={true}
-            className="absolute inset-0"
-            parallaxSpeed={TRANSITION_CONSTANTS.PARALLAX_BACKGROUND_OFFSET}
+            className="absolute inset-0 w-full h-full"
+            gridDensity={gridDensity}
+            transitionToDensity={transitionGridDensity}
+            transitionProgress={transitionProgress}
+            isSkipTransition={isSkipTransition}
+            parallaxOffset={parallaxOffset}
+            parallaxSpeed={parallaxMultiplier}
           />
         </div>
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-black/70" />
         <SparkleOverlay count={55} />
       </div>
 
@@ -504,24 +585,33 @@ export default function StackPage({ isActive, isTransitioning, transitionDirecti
           </div>
 
           {/* Central glowing orb */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
+          <div 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-auto cursor-pointer"
+            onMouseEnter={() => setHoveredCore(true)}
+            onMouseLeave={() => setHoveredCore(false)}
+          >
             <div className="relative">
-              <div className="w-14 h-14 md:w-18 md:h-18 lg:w-20 lg:h-20 rounded-full bg-gradient-to-br from-purple-400 via-pink-400 to-purple-600 shadow-lg shadow-purple-500/30 animate-pulse-glow-enhanced" 
+              <div className={cn(
+                "rounded-full bg-gradient-to-br from-purple-400 via-pink-400 to-purple-600 shadow-lg shadow-purple-500/30 animate-pulse-glow-enhanced transition-transform duration-200 hover:scale-110",
+                "w-10 h-10 sm:w-12 sm:h-12 md:w-18 md:h-18 lg:w-20 lg:h-20"
+              )} 
                 style={{
-                  animation: "pulse-glow-enhanced 4s ease-in-out infinite",
+                  animation: hoveredCore ? "none" : "pulse-glow-enhanced 4s ease-in-out infinite",
                   willChange: "transform, filter",
                 }}
               />
-              <div className="absolute inset-[-6px] rounded-full bg-purple-400/20 blur-lg animate-pulse" 
+              <div className="absolute inset-[-6px] rounded-full bg-purple-400/20 blur-lg animate-pulse transition-opacity duration-200" 
                 style={{
-                  animation: "pulse 3s ease-in-out infinite",
+                  animation: hoveredCore ? "none" : "pulse 3s ease-in-out infinite",
+                  opacity: hoveredCore ? 0.5 : 1,
                 }}
               />
               <div
-                className="absolute inset-[-12px] rounded-full bg-pink-400/15 blur-xl animate-pulse"
+                className="absolute inset-[-12px] rounded-full bg-pink-400/15 blur-xl animate-pulse transition-opacity duration-200"
                 style={{ 
                   animationDelay: "0.5s",
-                  animation: "pulse 3.5s ease-in-out infinite",
+                  animation: hoveredCore ? "none" : "pulse 3.5s ease-in-out infinite",
+                  opacity: hoveredCore ? 0.5 : 1,
                 }}
               />
             </div>

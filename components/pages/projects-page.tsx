@@ -14,6 +14,13 @@ interface ProjectsPageProps {
   isActive: boolean
   isTransitioning: boolean
   transitionDirection?: "in" | "out"
+  gridDensity?: 1 | 2 | 4 | 8
+  transitionGridDensity?: 1 | 2 | 4 | 8
+  transitionProgress?: number
+  parallaxMultiplier?: number
+  parallaxOffset?: { x: number; y: number }
+  isSkipTransition?: boolean
+  contentTransform?: { scale: number; x: number; y: number }
 }
 
 interface Project {
@@ -67,7 +74,18 @@ const projects: Project[] = [
   },
 ]
 
-export default function ProjectsPage({ isActive, isTransitioning, transitionDirection }: ProjectsPageProps) {
+export default function ProjectsPage({
+  isActive,
+  isTransitioning,
+  transitionDirection,
+  gridDensity = 4,
+  transitionGridDensity,
+  transitionProgress = 0,
+  parallaxMultiplier = 2.0,
+  parallaxOffset = { x: 0, y: 0 },
+  isSkipTransition = false,
+  contentTransform = { scale: 1, x: 0, y: 0 },
+}: ProjectsPageProps) {
   const [hoveredProject, setHoveredProject] = useState<string | null>(null)
   const [sceneReady, setSceneReady] = useState(false)
   const [pinsVisible, setPinsVisible] = useState<Record<string, boolean>>({})
@@ -221,7 +239,12 @@ export default function ProjectsPage({ isActive, isTransitioning, transitionDire
             handleResize={true}
             usePanningStyle={true}
             className="absolute"
-            parallaxSpeed={TRANSITION_CONSTANTS.PARALLAX_BACKGROUND_OFFSET}
+            gridDensity={gridDensity}
+            transitionToDensity={transitionGridDensity}
+            transitionProgress={transitionProgress}
+            isSkipTransition={isSkipTransition}
+            parallaxOffset={parallaxOffset}
+            parallaxSpeed={parallaxMultiplier}
           />
         </div>
         <div className="absolute inset-0 bg-black/70" />

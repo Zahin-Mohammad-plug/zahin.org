@@ -11,9 +11,27 @@ interface AboutPageProps {
   isActive: boolean
   isTransitioning: boolean
   transitionDirection?: "in" | "out"
+  gridDensity?: 1 | 2 | 4 | 8
+  transitionGridDensity?: 1 | 2 | 4 | 8
+  transitionProgress?: number
+  parallaxMultiplier?: number
+  parallaxOffset?: { x: number; y: number }
+  isSkipTransition?: boolean
+  contentTransform?: { scale: number; x: number; y: number }
 }
 
-export default function AboutPage({ isActive, isTransitioning, transitionDirection }: AboutPageProps) {
+export default function AboutPage({
+  isActive,
+  isTransitioning,
+  transitionDirection,
+  gridDensity = 1,
+  transitionGridDensity,
+  transitionProgress = 0,
+  parallaxMultiplier = 1,
+  parallaxOffset = { x: 0, y: 0 },
+  isSkipTransition = false,
+  contentTransform = { scale: 1, x: 0, y: 0 },
+}: AboutPageProps) {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [aboutImage, setAboutImage] = useState("/images/aboutmepagedark.png")
@@ -127,8 +145,6 @@ export default function AboutPage({ isActive, isTransitioning, transitionDirecti
               width: `${monitorPos.width}px`,
               height: `${monitorPos.height}px`,
               padding: "min(1.2vw, 1.1rem)",
-              border: "3px solid #00ff00", // Neon green debug border
-              boxSizing: "border-box",
             }}
           >
             {/* Galaxy background behind text */}
@@ -139,6 +155,12 @@ export default function AboutPage({ isActive, isTransitioning, transitionDirecti
               extraTiles={1}
               className="absolute inset-0 -z-10"
               imageSrc="/images/projectspagebackground.png"
+              gridDensity={gridDensity}
+              transitionToDensity={transitionGridDensity}
+              transitionProgress={transitionProgress}
+              isSkipTransition={isSkipTransition}
+              parallaxOffset={parallaxOffset}
+              parallaxSpeed={parallaxMultiplier}
             />
             
             {/* Content wrapper with backdrop for readability */}

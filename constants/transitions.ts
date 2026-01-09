@@ -46,3 +46,37 @@ export const TRANSITION_CONSTANTS = {
   PIN_STAGGER_DELAY: 100, // Delay between each pin appearance
 } as const
 
+/**
+ * Depth-based spatial navigation transition constants
+ */
+export const DEPTH_TRANSITIONS = {
+  // Transition durations (milliseconds)
+  ADJACENT_DURATION: 1200, // 1.2s for adjacent transitions
+  SKIP_DURATION: 800, // 0.8s for skip transitions
+  FULL_JOURNEY_DURATION: 1500, // 1.5s for About ↔ Stack (longest skip)
+
+  // Grid density mapping (repetition count per axis)
+  GRID_DENSITIES: {
+    about: 1, // 1x1 grid = 1 tile
+    passions: 2, // 2x2 grid = 4 tiles
+    projects: 4, // 4x4 grid = 16 tiles
+    stack: 8, // 8x8 grid = 64 tiles
+  } as const,
+
+  // Parallax multipliers (tiles move MORE than content)
+  // Closer objects move faster relative to background
+  PARALLAX_MULTIPLIERS: {
+    1: 1.0, // About: no parallax during transitions
+    2: 1.5, // Passions: tiles move 1.5x content movement
+    4: 2.0, // Projects: tiles move 2x content movement
+    8: 2.0, // Stack: tiles move 2x content movement
+  } as const,
+
+  // Content scale configurations for entry animations
+  CONTENT_SCALES: {
+    passions: { from: 0.3, to: 1 },
+    projects: { from: 1.2, to: 1 },
+    stack: { from: 0, to: 1 },
+  },
+} as const
+

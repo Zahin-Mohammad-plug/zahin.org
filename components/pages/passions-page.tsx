@@ -12,6 +12,13 @@ interface PassionsPageProps {
   isActive: boolean
   isTransitioning: boolean
   transitionDirection?: "in" | "out"
+  gridDensity?: 1 | 2 | 4 | 8
+  transitionGridDensity?: 1 | 2 | 4 | 8
+  transitionProgress?: number
+  parallaxMultiplier?: number
+  parallaxOffset?: { x: number; y: number }
+  isSkipTransition?: boolean
+  contentTransform?: { scale: number; x: number; y: number }
 }
 
 interface Passion {
@@ -63,7 +70,18 @@ const passions: Passion[] = [
   },
 ]
 
-export default function PassionsPage({ isActive, isTransitioning, transitionDirection }: PassionsPageProps) {
+export default function PassionsPage({
+  isActive,
+  isTransitioning,
+  transitionDirection,
+  gridDensity = 2,
+  transitionGridDensity,
+  transitionProgress = 0,
+  parallaxMultiplier = 1.5,
+  parallaxOffset = { x: 0, y: 0 },
+  isSkipTransition = false,
+  contentTransform = { scale: 1, x: 0, y: 0 },
+}: PassionsPageProps) {
   const [hoveredPassion, setHoveredPassion] = useState<string | null>(null)
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
@@ -177,11 +195,14 @@ export default function PassionsPage({ isActive, isTransitioning, transitionDire
           handleResize={true}
           className="absolute inset-0"
           imageSrc="/images/projectspagebackground.png"
+          gridDensity={gridDensity}
+          transitionToDensity={transitionGridDensity}
+          transitionProgress={transitionProgress}
+          isSkipTransition={isSkipTransition}
+          parallaxOffset={parallaxOffset}
+          parallaxSpeed={parallaxMultiplier}
         />
-        <div className={cn(
-          "absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent transition-opacity duration-500",
-          isActive ? "opacity-100" : "opacity-0"
-        )} />
+        <div className="absolute inset-0 bg-black/70" />
         {isActive && <SparkleOverlay count={40} />}
       </div>
 

@@ -336,3 +336,33 @@ img[src*="/images/"] {
 .scale-200 {
   transform: scale(2);
 }
+
+/* Depth-based spatial navigation animations */
+@keyframes content-scale-enter {
+  0% {
+    transform: scale(var(--from-scale, 0.3)) translate(var(--from-x, 0), var(--from-y, 0));
+  }
+  100% {
+    transform: scale(var(--to-scale, 1)) translate(var(--to-x, 0), var(--to-y, 0));
+  }
+}
+
+@keyframes content-scale-exit {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(var(--exit-scale, 0.3)) translate(var(--exit-x, 0), var(--exit-y, 0));
+  }
+}
+
+@keyframes skip-transition-blur {
+  0%, 100% {
+    filter: blur(0px);
+  }
+  50% {
+    filter: blur(10px);
+  }
+}
+
+/* Parallax transforms are applied via JS during animation loop - no keyframes needed */
