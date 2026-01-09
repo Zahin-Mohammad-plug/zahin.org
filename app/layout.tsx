@@ -29,6 +29,9 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-icon.png",
   },
+  other: {
+    "apple-mobile-web-app-title": "Zahin.org",
+  },
 }
 
 export default function RootLayout({

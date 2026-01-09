@@ -30,3 +30,7 @@ yarn.lock
 *.tsbuildinfo
 next-env.d.ts
 package-lock.json
+
+# macOS
+.DS_Store
+*.DS_Store
