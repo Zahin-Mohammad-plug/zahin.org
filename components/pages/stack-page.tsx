@@ -232,6 +232,10 @@ export default function StackPage({
   const handleDragStart = useCallback((clientX: number, clientY: number) => {
     setIsDragging(true)
     setDragStart({ x: clientX - panOffset.x, y: clientY - panOffset.y })
+    // Set data attribute to prevent page navigation during drag
+    if (containerRef.current) {
+      containerRef.current.setAttribute('data-dragging', 'true')
+    }
   }, [panOffset])
 
   const handleDragMove = useCallback((clientX: number, clientY: number) => {
@@ -245,6 +249,10 @@ export default function StackPage({
   const handleDragEnd = useCallback(() => {
     setIsDragging(false)
     setPinchStartDistance(null)
+    // Remove data attribute to allow page navigation again
+    if (containerRef.current) {
+      containerRef.current.removeAttribute('data-dragging')
+    }
   }, [])
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -260,6 +268,7 @@ export default function StackPage({
 
   const [pinchStartDistance, setPinchStartDistance] = useState<number | null>(null)
   const [pinchStartZoom, setPinchStartZoom] = useState(1)
+  const [iconTouchStart, setIconTouchStart] = useState<{ x: number; y: number; tech: string } | null>(null)
 
   const getDistance = (touch1: React.Touch, touch2: React.Touch) => {
     const dx = touch2.clientX - touch1.clientX
@@ -268,23 +277,70 @@ export default function StackPage({
   }
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    // Check if touch started on an icon - if so, don't prevent default to allow tap
+    const target = e.target as HTMLElement
+    const isIcon = target.closest('[data-tech-icon]')
+    
     if (e.touches.length === 2) {
-      // Pinch to zoom
+      // Pinch to zoom - always allow
       e.preventDefault()
       e.stopPropagation()
+      if (containerRef.current) {
+        containerRef.current.setAttribute('data-dragging', 'true')
+      }
       const distance = getDistance(e.touches[0], e.touches[1])
       setPinchStartDistance(distance)
       setPinchStartZoom(zoom)
       setIsDragging(false)
     } else if (e.touches.length === 1) {
-      // Single touch drag
+      // If touching an icon, don't prevent default - let icon handle it
+      if (isIcon) {
+        // Still set data attribute to prevent page navigation, but don't start drag
+        if (containerRef.current) {
+          containerRef.current.setAttribute('data-dragging', 'true')
+        }
+        return
+      }
+      
+      // Single touch on background/orbit area - start drag
       e.preventDefault()
       e.stopPropagation()
+      if (containerRef.current) {
+        containerRef.current.setAttribute('data-dragging', 'true')
+      }
       handleDragStart(e.touches[0].clientX, e.touches[0].clientY)
     }
   }, [zoom, handleDragStart])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    // Check if touch is on an icon that's being tapped (not dragged)
+    const target = e.target as HTMLElement
+    const iconElement = target.closest('[data-tech-icon]')
+    
+    // If we have an icon touch start and user moved significantly, allow drag
+    if (iconTouchStart && e.touches.length === 1) {
+      const touch = e.touches[0]
+      const deltaX = Math.abs(touch.clientX - iconTouchStart.x)
+      const deltaY = Math.abs(touch.clientY - iconTouchStart.y)
+      // If moved more than 10px, treat as drag - clear icon touch start
+      if (deltaX > 10 || deltaY > 10) {
+        setIconTouchStart(null)
+        setHoveredTech(null)
+        // Fall through to allow drag
+      } else {
+        // Still small movement on icon - don't drag yet
+        if (containerRef.current) {
+          containerRef.current.setAttribute('data-dragging', 'true')
+        }
+        return
+      }
+    }
+    
+    // Always mark as dragging when touching moves on stack page
+    if (containerRef.current) {
+      containerRef.current.setAttribute('data-dragging', 'true')
+    }
+    
     if (e.touches.length === 2 && pinchStartDistance !== null) {
       // Pinch zoom
       e.preventDefault()
@@ -293,25 +349,44 @@ export default function StackPage({
       const scale = distance / pinchStartDistance
       const newZoom = Math.max(0.5, Math.min(2.5, pinchStartZoom * scale))
       setZoom(newZoom)
-    } else if (e.touches.length === 1 && isDragging) {
-      // Single touch drag
-      e.preventDefault()
-      e.stopPropagation()
-      handleDragMove(e.touches[0].clientX, e.touches[0].clientY)
     } else if (e.touches.length === 1) {
-      // Prevent page scroll when interacting with stack
-      e.preventDefault()
-      e.stopPropagation()
+      // Single touch drag (always on mobile/zoomed, or when dragging)
+      // Only drag if not on icon or if icon touch was cleared (drag detected)
+      if (!iconElement || !iconTouchStart) {
+        e.preventDefault()
+        e.stopPropagation()
+        if (isDragging || zoom > 1 || isMobile || !iconElement) {
+          handleDragMove(e.touches[0].clientX, e.touches[0].clientY)
+        }
+      }
     }
-  }, [pinchStartDistance, pinchStartZoom, isDragging, handleDragMove])
+  }, [pinchStartDistance, pinchStartZoom, isDragging, handleDragMove, zoom, isMobile, iconTouchStart])
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (isDragging || pinchStartDistance !== null) {
+    // Only prevent default if not an icon tap
+    const target = e.target as HTMLElement
+    const isIcon = target.closest('[data-tech-icon]')
+    
+    // If icon touch start exists and movement was small, don't prevent default (allow tap)
+    if (iconTouchStart && isIcon) {
+      const touch = e.changedTouches[0]
+      const deltaX = Math.abs(touch.clientX - iconTouchStart.x)
+      const deltaY = Math.abs(touch.clientY - iconTouchStart.y)
+      if (deltaX < 10 && deltaY < 10) {
+        // Small movement - was a tap, icon handler will deal with it
+        return
+      }
+    }
+    
+    if (isDragging || pinchStartDistance !== null || zoom > 1 || isMobile) {
       e.preventDefault()
       e.stopPropagation()
     }
     handleDragEnd()
-  }, [isDragging, pinchStartDistance, handleDragEnd])
+    // Clear pinch state and icon touch
+    setPinchStartDistance(null)
+    setIconTouchStart(null)
+  }, [isDragging, pinchStartDistance, handleDragEnd, zoom, isMobile, iconTouchStart])
 
   // Helper function to get orbit key for a tech name
   const getOrbitForTech = (techName: string): string | null => {
@@ -397,6 +472,7 @@ export default function StackPage({
       return (
         <div
           key={tech.name}
+          data-tech-icon="true"
           className="absolute transition-transform duration-100 pointer-events-auto"
           style={{
             left: `calc(50% + ${x}px)`,
@@ -411,6 +487,68 @@ export default function StackPage({
           onMouseLeave={() => {
             setHoveredTech(null)
             // Don't clear orbit here - let handleOrbitMouseMove update it based on mouse position
+          }}
+          onTouchStart={(e) => {
+            // Handle icon touch - set hovered state initially
+            e.stopPropagation()
+            const touch = e.touches[0]
+            setIconTouchStart({ x: touch.clientX, y: touch.clientY, tech: tech.name })
+            setHoveredTech(tech.name)
+            setHoveredOrbit(orbitKey)
+            // Set data attribute to prevent page navigation
+            if (containerRef.current) {
+              containerRef.current.setAttribute('data-dragging', 'true')
+            }
+            // Prevent default to stop any scrolling, but allow tap feedback
+            e.preventDefault()
+          }}
+          onTouchMove={(e) => {
+            // If user moves finger significantly, allow drag to start
+            if (iconTouchStart && iconTouchStart.tech === tech.name && e.touches.length === 1) {
+              const touch = e.touches[0]
+              const deltaX = Math.abs(touch.clientX - iconTouchStart.x)
+              const deltaY = Math.abs(touch.clientY - iconTouchStart.y)
+              // If moved more than 10px, start dragging instead of just hovering
+              if (deltaX > 10 || deltaY > 10) {
+                const startPos = { x: iconTouchStart.x, y: iconTouchStart.y }
+                setIconTouchStart(null)
+                // Clear hover and start drag
+                setHoveredTech(null)
+                // Start dragging from the original touch position
+                handleDragStart(startPos.x, startPos.y)
+                // Don't stop propagation - let container's handleTouchMove continue the drag
+                // Container handler will check isDragging or isMobile and proceed
+                e.preventDefault()
+                // Don't stop propagation so container can handle continued drag
+                return
+              } else {
+                // Still small movement on icon, keep hovered and stop propagation
+                e.stopPropagation()
+              }
+            } else {
+              // Not our icon touch, stop propagation
+              e.stopPropagation()
+            }
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation()
+            // If touch didn't move much, treat as tap - keep hovered briefly for feedback
+            if (iconTouchStart && iconTouchStart.tech === tech.name) {
+              const touch = e.changedTouches[0]
+              const deltaX = Math.abs(touch.clientX - iconTouchStart.x)
+              const deltaY = Math.abs(touch.clientY - iconTouchStart.y)
+              
+              if (deltaX < 10 && deltaY < 10) {
+                // It's a tap - keep highlighted briefly then clear
+                setTimeout(() => {
+                  setHoveredTech(null)
+                }, 500)
+              } else {
+                // It was a drag - clear immediately
+                setHoveredTech(null)
+              }
+            }
+            setIconTouchStart(null)
           }}
         >
           {/* Subtle trail effect */}

@@ -171,9 +171,16 @@ export default function Home() {
                             target.closest('[role="button"]') ||
                             target.closest('a') ||
                             target.closest('[onclick]') ||
-                            target.closest('nav') ||
-                            // Stack page orbit area
-                            (currentPage === "stack" && target.closest('[data-interactive="true"]'))
+                            target.closest('nav')
+      
+      // On stack page, always check for interactive elements more broadly
+      if (currentPage === "stack") {
+        const stackContainer = target.closest('[data-interactive="true"]')
+        if (stackContainer) {
+          isInteractingWithElement = true
+          return
+        }
+      }
       
       if (isInteractive || isDragging) {
         isInteractingWithElement = true
@@ -212,7 +219,11 @@ export default function Home() {
     }
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (isTransitioning || isInteractingWithElement) {
+      // Final check for any dragging or interactive elements
+      const target = e.target as HTMLElement
+      const isDragging = target.closest('[data-dragging="true"]')
+      
+      if (isTransitioning || isInteractingWithElement || isDragging) {
         isInteractingWithElement = false
         return
       }
