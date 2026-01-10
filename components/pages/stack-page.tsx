@@ -120,14 +120,20 @@ export default function StackPage({
 
   // Function to update radii based on actual container size
   const updateRadii = useCallback(() => {
-    if (!orbitsRef.current || typeof window === "undefined") return
+    if (typeof window === "undefined") return
     
     const width = window.innerWidth
     setIsMobile(width < 768)
     
-    // Use actual rendered container size for precise calculations
-    const rect = orbitsRef.current.getBoundingClientRect()
-    const containerSize = rect.width || Math.min(width * 0.9, 800)
+    // Try to use actual rendered container size, but fallback to calculated size
+    let containerSize = Math.min(width * 0.9, 800)
+    if (orbitsRef.current) {
+      const rect = orbitsRef.current.getBoundingClientRect()
+      // Only use rect width if it's valid (greater than 0)
+      if (rect.width > 0) {
+        containerSize = rect.width
+      }
+    }
     
     // Orbit rings are 30%, 55%, 85% of container, so radii are half of those percentages
     // Inner: 30% / 2 = 15% of container, Middle: 55% / 2 = 27.5%, Outer: 85% / 2 = 42.5%
@@ -140,18 +146,33 @@ export default function StackPage({
 
   useEffect(() => {
     setMounted(true)
-  }, [])
-
-  // Update radii when scene is ready and container is available
-  useEffect(() => {
-    if (sceneReady && orbitsRef.current && isActive) {
-      // Small delay to ensure container is fully rendered
-      const timer = setTimeout(() => {
-        updateRadii()
-      }, 50)
-      return () => clearTimeout(timer)
+    // Initialize radii immediately based on window size
+    if (typeof window !== "undefined") {
+      updateRadii()
     }
-  }, [sceneReady, isActive, updateRadii])
+  }, [updateRadii])
+
+  // Update radii when scene is ready and container is available (for more precise calculation)
+  useEffect(() => {
+    if (isActive && !isTransitioning) {
+      // Try to update radii when page becomes active, with multiple attempts to catch container render
+      const attemptUpdate = () => {
+        updateRadii()
+        // If container is available, we're done. Otherwise try once more after a delay
+        if (!orbitsRef.current || orbitsRef.current.getBoundingClientRect().width === 0) {
+          setTimeout(updateRadii, 100)
+        }
+      }
+      
+      if (sceneReady) {
+        // When scene is ready, container should be rendered
+        setTimeout(attemptUpdate, 50)
+      } else {
+        // Also try immediately in case container renders before sceneReady
+        attemptUpdate()
+      }
+    }
+  }, [sceneReady, isActive, isTransitioning, updateRadii])
 
   // Track window width changes for mobile detection and update radii
   useEffect(() => {
@@ -177,21 +198,30 @@ export default function StackPage({
   useEffect(() => {
     // Only set scene ready when page is active and not transitioning
     if (isActive && !isTransitioning) {
-      const revealTimer = setTimeout(() => setSceneReady(true), TRANSITION_CONSTANTS.SCENE_REVEAL_DELAY)
+      const revealTimer = setTimeout(() => {
+        setSceneReady(true)
+        // Also trigger a radii update after scene becomes ready
+        if (mounted) {
+          setTimeout(() => updateRadii(), 50)
+        }
+      }, TRANSITION_CONSTANTS.SCENE_REVEAL_DELAY)
       return () => clearTimeout(revealTimer)
+    } else if (!isActive) {
+      // Reset scene ready when page becomes inactive
+      setSceneReady(false)
     }
-    // Reset scene ready when page becomes inactive
-    setSceneReady(false)
-  }, [isActive, isTransitioning])
+  }, [isActive, isTransitioning, mounted, updateRadii])
 
   // Entrance animation state
   const [entranceScale, setEntranceScale] = useState(0)
   
   useEffect(() => {
-    if (sceneReady && isActive && !isTransitioning) {
+    if (sceneReady && isActive && !isTransitioning && mounted) {
       // Animate orbits expanding from center
       const startTime = Date.now()
       const duration = 800
+      let animationFrameId: number
+      
       const animate = () => {
         const elapsed = Date.now() - startTime
         const progress = Math.min(elapsed / duration, 1)
@@ -200,14 +230,49 @@ export default function StackPage({
         setEntranceScale(eased)
         
         if (progress < 1) {
-          requestAnimationFrame(animate)
+          animationFrameId = requestAnimationFrame(animate)
+        } else {
+          // Ensure it ends at exactly 1
+          setEntranceScale(1)
         }
       }
-      animate()
-    } else {
+      
+      // Start animation immediately
+      animationFrameId = requestAnimationFrame(animate)
+      
+      // Fallback: ensure scale is set to 1 after animation should complete
+      const fallbackTimer = setTimeout(() => {
+        setEntranceScale(1)
+      }, duration + 100)
+      
+      return () => {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId)
+        }
+        clearTimeout(fallbackTimer)
+      }
+    } else if (!isActive || isTransitioning) {
+      // Reset when page becomes inactive or is transitioning
+      setEntranceScale(0)
+    } else if (isActive && !isTransitioning && !sceneReady && mounted) {
+      // If active but scene not ready yet, keep scale at 0
       setEntranceScale(0)
     }
-  }, [sceneReady, isActive, isTransitioning])
+  }, [sceneReady, isActive, isTransitioning, mounted])
+  
+  // Additional fallback: if page has been active for a while and still no animation, force it
+  useEffect(() => {
+    if (isActive && !isTransitioning && mounted && entranceScale === 0) {
+      const fallbackTimer = setTimeout(() => {
+        if (entranceScale === 0 && isActive && !isTransitioning) {
+          // Force show content if animation didn't start after reasonable time
+          setEntranceScale(1)
+        }
+      }, 1500) // Give it 1.5s total (180ms delay + 800ms animation + buffer)
+      
+      return () => clearTimeout(fallbackTimer)
+    }
+  }, [isActive, isTransitioning, mounted, entranceScale])
 
   // Wheel zoom handler - only zoom when over orbit area
   useEffect(() => {
