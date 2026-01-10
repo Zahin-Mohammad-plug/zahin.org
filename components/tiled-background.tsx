@@ -85,7 +85,7 @@ export default function TiledBackground({
   const transitionCanvasRef = useRef<HTMLCanvasElement>(null)
   const [imgLoaded, setImgLoaded] = useState(false)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const resizeTimeoutRef = useRef<number | null>(null)
 
   // Track dimensions if handleResize is true or if we need extraSize
   // Always initialize dimensions to viewport size for proper canvas sizing
