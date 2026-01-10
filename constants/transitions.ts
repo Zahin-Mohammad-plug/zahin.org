@@ -79,4 +79,3 @@ export const DEPTH_TRANSITIONS = {
     stack: { from: 0, to: 1 },
   },
 } as const
-
