@@ -118,22 +118,18 @@ export default function StackPage({
   const containerRef = useRef<HTMLDivElement>(null)
   const orbitsRef = useRef<HTMLDivElement>(null)
 
-  // Function to update radii based on actual container size
+  // Function to update radii based on CSS container size
+  // IMPORTANT: Do NOT use getBoundingClientRect() here because the orbit container
+  // has a CSS transform scale(entranceScale) which starts at 0. getBoundingClientRect
+  // returns the *transformed* size, giving near-zero radii and bunching all icons at center.
   const updateRadii = useCallback(() => {
     if (typeof window === "undefined") return
     
     const width = window.innerWidth
     setIsMobile(width < 768)
     
-    // Try to use actual rendered container size, but fallback to calculated size
-    let containerSize = Math.min(width * 0.9, 800)
-    if (orbitsRef.current) {
-      const rect = orbitsRef.current.getBoundingClientRect()
-      // Only use rect width if it's valid (greater than 0)
-      if (rect.width > 0) {
-        containerSize = rect.width
-      }
-    }
+    // Calculate from CSS: container width is min(90vw, 800px)
+    const containerSize = Math.min(width * 0.9, 800)
     
     // Orbit rings are 30%, 55%, 85% of container, so radii are half of those percentages
     // Inner: 30% / 2 = 15% of container, Middle: 55% / 2 = 27.5%, Outer: 85% / 2 = 42.5%
@@ -152,27 +148,12 @@ export default function StackPage({
     }
   }, [updateRadii])
 
-  // Update radii when scene is ready and container is available (for more precise calculation)
+  // Update radii when page becomes active (uses CSS-based calculation, no DOM dependency)
   useEffect(() => {
     if (isActive && !isTransitioning) {
-      // Try to update radii when page becomes active, with multiple attempts to catch container render
-      const attemptUpdate = () => {
-        updateRadii()
-        // If container is available, we're done. Otherwise try once more after a delay
-        if (!orbitsRef.current || orbitsRef.current.getBoundingClientRect().width === 0) {
-          setTimeout(updateRadii, 100)
-        }
-      }
-      
-      if (sceneReady) {
-        // When scene is ready, container should be rendered
-        setTimeout(attemptUpdate, 50)
-      } else {
-        // Also try immediately in case container renders before sceneReady
-        attemptUpdate()
-      }
+      updateRadii()
     }
-  }, [sceneReady, isActive, isTransitioning, updateRadii])
+  }, [isActive, isTransitioning, updateRadii])
 
   // Track window width changes for mobile detection and update radii
   useEffect(() => {
@@ -693,16 +674,17 @@ export default function StackPage({
         <div className="absolute inset-0 bg-black" />
         {/* Increased buffer on mobile to ensure full coverage */}
         <div className={cn(
-          "absolute",
+          "absolute animate-slow-pan",
           isMobile ? "inset-[-100px]" : "inset-[-60px]"
         )}>
           <TiledBackground
             sceneReady={sceneReady}
-            sizeMultiplier={1.0}
+            sizeMultiplier={1.3}
             extraSize={isMobile ? 300 : 200}
             tileOffset={-640}
             extraTiles={isMobile ? 6 : 4}
             handleResize={true}
+            usePanningStyle={true}
             className="absolute inset-0 w-full h-full"
             gridDensity={gridDensity}
             transitionToDensity={transitionGridDensity}
@@ -712,7 +694,7 @@ export default function StackPage({
             parallaxSpeed={parallaxMultiplier}
           />
         </div>
-        <div className="absolute inset-0 bg-black/70" />
+        <div className="absolute inset-0 bg-black/85" />
         <SparkleOverlay count={55} />
       </div>
 

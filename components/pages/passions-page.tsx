@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import Image from "next/image"
 import SparkleOverlay from "@/components/sparkle-overlay"
 import TiledBackground from "@/components/tiled-background"
+import { TRANSITION_CONSTANTS } from "@/constants/transitions"
 
 interface PassionsPageProps {
   isActive: boolean
@@ -28,7 +29,15 @@ interface Passion {
   // Position relative to the house image container (percentages)
   pinPosition: { top: string; left: string }
   cardOffset: { x: number; y: number }
-  pinColor: "orange" | "blue"
+  pinColor: "orange" | "blue" | "green" | "purple"
+}
+
+// Color mapping for passion pins (matches projects page pattern)
+const PIN_COLORS: Record<Passion["pinColor"], { fill: string; border: string; title: string; dot: string }> = {
+  orange: { fill: "fill-orange-500", border: "border-orange-500/40", title: "text-amber-400", dot: "bg-orange-400" },
+  blue:   { fill: "fill-blue-500",   border: "border-blue-500/40",   title: "text-sky-400",   dot: "bg-blue-400" },
+  green:  { fill: "fill-emerald-500",border: "border-emerald-500/40",title: "text-emerald-400",dot: "bg-emerald-400" },
+  purple: { fill: "fill-violet-500", border: "border-violet-500/40", title: "text-violet-400", dot: "bg-violet-400" },
 }
 
 const passions: Passion[] = [
@@ -37,7 +46,7 @@ const passions: Passion[] = [
     title: "3D Printing",
     description:
       'I may have misunderstood "software engineering" and spent too long learning CAD, slicing, and how designs fail physically.',
-    pinPosition: { top: "72%", left: "18%" }, // On the 3D printer area
+    pinPosition: { top: "72%", left: "18%" },
     cardOffset: { x: -180, y: -160 },
     pinColor: "orange",
   },
@@ -46,25 +55,25 @@ const passions: Passion[] = [
     title: "Cars",
     description:
       "I've always been drawn to cars, partly for how they work, partly for how many problems they hide until you look closely.",
-    pinPosition: { top: "38%", left: "82%" }, // On the BMW car
+    pinPosition: { top: "38%", left: "82%" },
     cardOffset: { x: 30, y: -80 },
-    pinColor: "orange",
+    pinColor: "purple",
   },
   {
     id: "gym",
     title: "Gym",
     description:
       "The gym is where I go when debugging stops making sense and problems are better solved one rep at a time.",
-    pinPosition: { top: "68%", left: "72%" }, // On the gym equipment area
+    pinPosition: { top: "68%", left: "72%" },
     cardOffset: { x: 30, y: -60 },
-    pinColor: "blue",
+    pinColor: "green",
   },
   {
     id: "homelab",
     title: "Homelab",
     description:
       "I keep a home server mostly to learn what actually happens when systems are left running without supervision.",
-    pinPosition: { top: "70%", left: "48%" }, // On the server rack area
+    pinPosition: { top: "70%", left: "48%" },
     cardOffset: { x: -100, y: 40 },
     pinColor: "blue",
   },
@@ -87,6 +96,16 @@ export default function PassionsPage({
   const containerRef = useRef<HTMLDivElement>(null)
   const [sceneReady, setSceneReady] = useState(false)
   const [pinsVisible, setPinsVisible] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < TRANSITION_CONSTANTS.MOBILE_BREAKPOINT)
+    }
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
 
   useEffect(() => {
     if (isActive) {
@@ -187,23 +206,27 @@ export default function PassionsPage({
       }}
     >
       <div className="absolute inset-0 overflow-hidden">
-        <TiledBackground
-          sceneReady={sceneReady}
-          sizeMultiplier={1.0}
-          tileOffset={0}
-          extraTiles={4}
-          handleResize={true}
-          className="absolute inset-0"
-          imageSrc="/images/projectspagebackground.png"
-          gridDensity={gridDensity}
-          transitionToDensity={transitionGridDensity}
-          transitionProgress={transitionProgress}
-          isSkipTransition={isSkipTransition}
-          parallaxOffset={parallaxOffset}
-          parallaxSpeed={parallaxMultiplier}
-        />
+        <div className="absolute inset-0 bg-black" />
+        <div className="absolute inset-0 animate-slow-pan">
+          <TiledBackground
+            sceneReady={sceneReady}
+            sizeMultiplier={1.3}
+            tileOffset={0}
+            extraTiles={4}
+            handleResize={true}
+            usePanningStyle={true}
+            className="absolute"
+            imageSrc="/images/projectspagebackground.png"
+            gridDensity={gridDensity}
+            transitionToDensity={transitionGridDensity}
+            transitionProgress={transitionProgress}
+            isSkipTransition={isSkipTransition}
+            parallaxOffset={parallaxOffset}
+            parallaxSpeed={parallaxMultiplier}
+          />
+        </div>
         <div className="absolute inset-0 bg-black/70" />
-        {isActive && <SparkleOverlay count={40} />}
+        {isActive && <SparkleOverlay count={45} />}
       </div>
 
       {/* Main content */}
@@ -260,7 +283,9 @@ export default function PassionsPage({
               zIndex: 30,
             }}
           >
-            {passions.map((passion) => (
+            {passions.map((passion) => {
+              const colors = PIN_COLORS[passion.pinColor]
+              return (
               <div key={passion.id}>
                 {/* Pin marker - SVG map pin like projects page */}
                 <div
@@ -278,21 +303,21 @@ export default function PassionsPage({
                     alignItems: "center",
                     justifyContent: "center",
                   }}
-                  onMouseEnter={() => setHoveredPassion(passion.id)}
-                  onMouseLeave={() => setHoveredPassion(null)}
+                  onMouseEnter={() => !isMobile && setHoveredPassion(passion.id)}
+                  onMouseLeave={() => !isMobile && setHoveredPassion(null)}
                   onClick={(e) => handlePinClick(e, passion.id)}
                   onTouchStart={(e) => handlePinTouchStart(e, passion.id)}
                   onTouchEnd={(e) => handlePinTouchEnd(e, passion.id)}
                 >
                   <svg
-                    width="32"
-                    height="32"
+                    width={isMobile ? "24" : "32"}
+                    height={isMobile ? "24" : "32"}
                     viewBox="0 0 512 512"
                     className={cn(
                       "transition-all drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] pointer-events-none",
                       pinsVisible ? "opacity-100 scale-100" : "opacity-0 scale-50",
                       pinsVisible && "animate-pulse-glow-enhanced",
-                      hoveredPassion === passion.id && "drop-shadow-[0_0_16px_currentColor]",
+                      hoveredPassion === passion.id && "drop-shadow-[0_0_16px_currentColor] scale-125",
                     )}
                     style={{
                       willChange: "transform, opacity",
@@ -300,15 +325,13 @@ export default function PassionsPage({
                   >
                     <path
                       d="M256,0C160.798,0,83.644,77.155,83.644,172.356c0,97.162,48.158,117.862,101.386,182.495C248.696,432.161,256,512,256,512s7.304-79.839,70.97-157.148c53.228-64.634,101.386-85.334,101.386-182.495C428.356,77.155,351.202,0,256,0z M256,231.921c-32.897,0-59.564-26.668-59.564-59.564s26.668-59.564,59.564-59.564c32.896,0,59.564,26.668,59.564,59.564S288.896,231.921,256,231.921z"
-                      className={cn(
-                        passion.pinColor === "orange"
-                          ? "fill-orange-500"
-                          : "fill-blue-500",
-                      )}
+                      className={colors.fill}
                     />
                   </svg>
                 </div>
 
+                {/* Desktop: floating card positioned relative to pin */}
+                {!isMobile && (
                 <div
                   data-passion-card
                   className={cn(
@@ -327,13 +350,13 @@ export default function PassionsPage({
                   <div
                     className={cn(
                       "bg-slate-900/95 backdrop-blur-sm border rounded-xl p-3 shadow-xl",
-                      passion.pinColor === "orange" ? "border-amber-500/40" : "border-blue-500/40",
+                      colors.border,
                     )}
                   >
                     <h3
                       className={cn(
                         "font-serif text-base md:text-lg font-bold mb-1.5 italic",
-                        passion.pinColor === "orange" ? "text-amber-400" : "text-sky-400",
+                        colors.title,
                       )}
                     >
                       {passion.title}
@@ -341,10 +364,42 @@ export default function PassionsPage({
                     <p className="text-xs md:text-sm text-gray-300 leading-relaxed">{passion.description}</p>
                   </div>
                 </div>
+                )}
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
+
+        {/* Mobile: bottom card overlay that never goes off-screen */}
+        {isMobile && hoveredPassion && (() => {
+          const passion = passions.find(p => p.id === hoveredPassion)
+          if (!passion) return null
+          const colors = PIN_COLORS[passion.pinColor]
+          return (
+            <div
+              data-passion-card
+              className="fixed bottom-16 left-4 right-4 z-40 transition-all duration-300 animate-in slide-in-from-bottom-4"
+            >
+              <div
+                className={cn(
+                  "bg-slate-900/95 backdrop-blur-md border rounded-xl p-4 shadow-2xl",
+                  colors.border,
+                )}
+              >
+                <h3
+                  className={cn(
+                    "font-serif text-lg font-bold mb-1.5 italic",
+                    colors.title,
+                  )}
+                >
+                  {passion.title}
+                </h3>
+                <p className="text-sm text-gray-300 leading-relaxed">{passion.description}</p>
+              </div>
+            </div>
+          )
+        })()}
       </div>
     </div>
   )
