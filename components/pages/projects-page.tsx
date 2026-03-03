@@ -40,9 +40,9 @@ const projects: Project[] = [
   {
     id: "lilycove",
     name: "LilyCove",
-    description: "Production web app aggregating listings for 18,000+ Pokémon cards, optimized for fast search.",
-    link: "https://lilycove.io",
-    linkText: "Built the production app",
+    description: "Production-scale Pokémon TCG marketplace aggregating 2.3M+ active listings across 20,000+ cards from eBay, Shopify, and TCGPlayer. Built a continuous scraping pipeline (~40K listings/day) with resilient rate-limited fetchers and crash-safe state persistence. Search in <100ms with dynamic pricing from historical sales data.",
+    link: "https://beta.lilycove.io",
+    linkText: "Visit beta",
     tech: ["React", "Python", "PostgreSQL", "Redis"],
     pinPosition: { top: "55%", left: "42%" },
     cardPosition: { top: "18%", left: "2%" },
@@ -70,6 +70,30 @@ const projects: Project[] = [
     tech: ["TypeScript", "React", "Parsing", "Web Speech API"],
     pinPosition: { top: "62%", left: "54%" },
     cardPosition: { top: "38%", right: "2%" },
+    pinColor: "blue",
+  },
+  {
+    id: "sharpstream",
+    name: "SharpStream",
+    description:
+      "A native macOS application for viewing RTSP streams with smart frame selection, OCR text recognition, and VLC-style playback controls.",
+    link: "https://github.com/Zahin-Mohammad-plug/macOS-rtsp-ocr-viewer",
+    linkText: "View on GitHub",
+    tech: ["Swift", "Ruby"],
+    pinPosition: { top: "48%", left: "28%" },
+    cardPosition: { top: "28%", left: "2%" },
+    pinColor: "orange",
+  },
+  {
+    id: "download-router",
+    name: "Download Router",
+    description:
+      "A Chrome extension that auto-routes downloads by domain, filenames and/or file types. With companion app for OS-level file operations. Supports macOS and Windows download selection.",
+    link: "https://github.com/Zahin-Mohammad-plug/Download-Router-Chrome-extension",
+    linkText: "View on GitHub",
+    tech: ["JavaScript", "CSS", "Electron"],
+    pinPosition: { top: "35%", left: "45%" },
+    cardPosition: { top: "0%", left: "2%" },
     pinColor: "blue",
   },
 ]
@@ -355,8 +379,8 @@ export default function ProjectsPage({
             {/* Project cards - positioned relative to globe */}
             {projects.map((project) => {
               // Calculate card position offset from pin
-              const cardOffsetX = project.id === "lilycove" ? -280 : 50
-              const cardOffsetY = project.id === "lilycove" ? -120 : project.id === "maple-leaf" ? -180 : -80
+              const cardOffsetX = project.id === "lilycove" ? -280 : project.id === "sharpstream" ? -300 : project.id === "download-router" ? 60 : 50
+              const cardOffsetY = project.id === "lilycove" ? -120 : project.id === "maple-leaf" ? -180 : project.id === "sharpstream" ? -60 : project.id === "download-router" ? -160 : -80
               
               // Apply drag offset if exists
               const dragOffset = cardPositions?.[project.id] || { x: 0, y: 0 }
