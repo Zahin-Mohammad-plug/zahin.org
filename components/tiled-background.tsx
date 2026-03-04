@@ -26,7 +26,8 @@ interface TiledBackgroundProps {
    */
   handleResize?: boolean
   /**
-   * Whether to use panning animation style (130% size with -15% offset)
+   * Whether to use panning animation style (160% size with -30% offset for full coverage
+   * when compounded with wrapper animate-slow-pan)
    */
   usePanningStyle?: boolean
   /**
@@ -135,10 +136,13 @@ export default function TiledBackground({
 
     const drawBackground = (targetCanvas: HTMLCanvasElement, targetDensity: number, baseOffset: number = 0) => {
       // Calculate canvas size
+      // When usePanningStyle is true, ensure bitmap matches the larger CSS display size (160%)
+      // to avoid blurry upscaling and ensure full tile coverage
+      const effectiveMultiplier = usePanningStyle ? Math.max(sizeMultiplier, 1.6) : sizeMultiplier
       const baseWidth = dimensions.width || window.innerWidth
       const baseHeight = dimensions.height || window.innerHeight
-      const width = Math.ceil(baseWidth * sizeMultiplier + extraSize)
-      const height = Math.ceil(baseHeight * sizeMultiplier + extraSize)
+      const width = Math.ceil(baseWidth * effectiveMultiplier + extraSize)
+      const height = Math.ceil(baseHeight * effectiveMultiplier + extraSize)
 
       targetCanvas.width = width
       targetCanvas.height = height
@@ -233,6 +237,7 @@ export default function TiledBackground({
     tileOffset,
     extraTiles,
     handleResize,
+    usePanningStyle,
     imageSrc,
     gridDensity,
     transitionToDensity,
@@ -268,10 +273,10 @@ export default function TiledBackground({
         style={{
           ...(usePanningStyle
             ? {
-                width: "130%",
-                height: "130%",
-                top: "-15%",
-                left: "-15%",
+                width: "160%",
+                height: "160%",
+                top: "-30%",
+                left: "-30%",
               }
             : {}),
           transform: parallaxX !== 0 || parallaxY !== 0 ? `translate(${parallaxX}px, ${parallaxY}px)` : undefined,
@@ -294,10 +299,10 @@ export default function TiledBackground({
           style={{
             ...(usePanningStyle
               ? {
-                  width: "130%",
-                  height: "130%",
-                  top: "-15%",
-                  left: "-15%",
+                  width: "160%",
+                  height: "160%",
+                  top: "-30%",
+                  left: "-30%",
                 }
               : {}),
             transform: parallaxX !== 0 || parallaxY !== 0 ? `translate(${parallaxX}px, ${parallaxY}px)` : undefined,
