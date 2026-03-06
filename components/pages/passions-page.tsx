@@ -20,6 +20,7 @@ interface PassionsPageProps {
   parallaxOffset?: { x: number; y: number }
   isSkipTransition?: boolean
   contentTransform?: { scale: number; x: number; y: number }
+  isCinematicEntry?: boolean
 }
 
 interface Passion {
@@ -90,6 +91,7 @@ export default function PassionsPage({
   parallaxOffset = { x: 0, y: 0 },
   isSkipTransition = false,
   contentTransform = { scale: 1, x: 0, y: 0 },
+  isCinematicEntry = false,
 }: PassionsPageProps) {
   const [hoveredPassion, setHoveredPassion] = useState<string | null>(null)
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
@@ -189,20 +191,21 @@ export default function PassionsPage({
   return (
     <div
       className={cn(
-        "absolute inset-0 transition-all duration-700 ease-in-out",
-        isActive && !isTransitioning
+        "absolute inset-0",
+        isCinematicEntry && isActive && !isTransitioning
           ? "opacity-100 translate-y-0 z-10"
-          : transitionDirection === "out"
-            ? "opacity-0 -translate-y-full pointer-events-none z-0"
-            : "opacity-0 translate-y-[100%] pointer-events-none z-0",
+          : isActive && !isTransitioning
+            ? "opacity-100 translate-y-0 z-10"
+            : transitionDirection === "out"
+              ? "opacity-0 -translate-y-full pointer-events-none z-0"
+              : "opacity-0 translate-y-[100%] pointer-events-none z-0",
       )}
       style={{
-        // Smooth fade in during cinematic transition from about page
-        // Starts when page swaps (at 2.8s) and finishes after overlay ends (3.2s)
-        // Use slower, smoother easing for the scroll up effect
-        transition: isTransitioning && transitionDirection === "in" 
-          ? "opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s, transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s"
-          : undefined,
+        transition: isCinematicEntry && !isTransitioning
+          ? 'none'
+          : isTransitioning && transitionDirection === "in" 
+            ? "opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s, transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s"
+            : 'all 700ms ease-in-out',
       }}
     >
       <div className="absolute inset-0 overflow-hidden">

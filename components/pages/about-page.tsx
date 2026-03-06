@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import Image from "next/image"
 import SparkleOverlay from "@/components/sparkle-overlay"
 import TiledBackground from "@/components/tiled-background"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef, useLayoutEffect } from "react"
 import { useTheme } from "next-themes"
 
 interface AboutPageProps {
@@ -18,6 +18,7 @@ interface AboutPageProps {
   parallaxOffset?: { x: number; y: number }
   isSkipTransition?: boolean
   contentTransform?: { scale: number; x: number; y: number }
+  isCinematicZoom?: boolean
 }
 
 export default function AboutPage({
@@ -31,11 +32,30 @@ export default function AboutPage({
   parallaxOffset = { x: 0, y: 0 },
   isSkipTransition = false,
   contentTransform = { scale: 1, x: 0, y: 0 },
+  isCinematicZoom = false,
 }: AboutPageProps) {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [aboutImage, setAboutImage] = useState("/images/aboutmepagedark.png")
   const [monitorPos, setMonitorPos] = useState({ left: 0, top: 0, width: 0, height: 0 })
+  const [zoomParams, setZoomParams] = useState({ scale: 1, tx: 0, ty: 0 })
+
+  // Track cinematic exit to suppress transition flash
+  const prevCinematicZoom = useRef(isCinematicZoom)
+  const [justExitedCinematic, setJustExitedCinematic] = useState(false)
+
+  useLayoutEffect(() => {
+    if (prevCinematicZoom.current && !isCinematicZoom) {
+      setJustExitedCinematic(true)
+      // Clear after two frames so normal transitions resume
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setJustExitedCinematic(false)
+        })
+      })
+    }
+    prevCinematicZoom.current = isCinematicZoom
+  }, [isCinematicZoom])
 
   useEffect(() => {
     setMounted(true)
@@ -104,26 +124,59 @@ export default function AboutPage({
     return () => window.removeEventListener('resize', calculateMonitorPosition)
   }, [])
 
+  // Calculate camera zoom parameters: scale + translate so monitor fills viewport
+  useEffect(() => {
+    const calculateZoom = () => {
+      if (monitorPos.width === 0) return
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      const mcx = monitorPos.left + monitorPos.width / 2
+      const mcy = monitorPos.top + monitorPos.height / 2
+      const scale = Math.max(vw / monitorPos.width, vh / monitorPos.height) * 1.05
+      const tx = vw / 2 - scale * mcx
+      const ty = vh / 2 - scale * mcy
+      setZoomParams({ scale, tx, ty })
+    }
+    calculateZoom()
+    window.addEventListener('resize', calculateZoom)
+    return () => window.removeEventListener('resize', calculateZoom)
+  }, [monitorPos])
+
   return (
     <div
       className={cn(
-        "absolute inset-0 transition-all duration-700 ease-in-out",
-        isActive && !isTransitioning
-          ? "opacity-100 scale-100 z-10"
-          : transitionDirection === "out"
-            ? "opacity-100 scale-100 pointer-events-none z-0"
-            : "opacity-0 scale-90 pointer-events-none z-0",
+        "absolute inset-0",
+        isCinematicZoom
+          ? "opacity-100 z-20 pointer-events-none"
+          : isActive && !isTransitioning
+            ? "opacity-100 scale-100 z-10"
+            : transitionDirection === "out"
+              ? "opacity-100 scale-100 pointer-events-none z-0"
+              : "opacity-0 scale-90 pointer-events-none z-0",
       )}
       style={{
-        // Keep about page visible during cinematic transition until overlay fills screen
-        transition: isTransitioning && transitionDirection === "out"
-          ? "opacity 0s, transform 0s"
-          : undefined,
+        transition: (isCinematicZoom || justExitedCinematic)
+          ? 'none'
+          : isTransitioning && transitionDirection === "out"
+            ? "opacity 0s, transform 0s"
+            : 'all 700ms ease-in-out',
+        ...(isCinematicZoom ? {
+          animation: 'about-cinematic-exit 2.5s linear forwards',
+        } : {}),
       }}
     >
       {/* Container that maintains image aspect ratio (1536x1024 = 3:2) and centers it */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="relative h-full w-full">
+        <div
+          className="relative h-full w-full"
+          style={isCinematicZoom ? {
+            transformOrigin: '0 0',
+            animation: 'camera-zoom-into-monitor 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
+            ['--zoom-scale' as string]: zoomParams.scale,
+            ['--zoom-tx' as string]: `${zoomParams.tx}px`,
+            ['--zoom-ty' as string]: `${zoomParams.ty}px`,
+          } : undefined}
+        >
           <Image
             src={aboutImage}
             alt="Zahin at desk"
@@ -149,7 +202,7 @@ export default function AboutPage({
           >
             {/* Galaxy background behind text */}
             <TiledBackground
-              sceneReady={isActive && !isTransitioning}
+              sceneReady={isCinematicZoom || (isActive && !isTransitioning)}
               sizeMultiplier={1.0}
               tileOffset={0}
               extraTiles={1}
@@ -164,7 +217,7 @@ export default function AboutPage({
             />
             
             {/* Content wrapper with backdrop for readability */}
-            <div className="relative z-10 flex flex-col h-full">
+            <div className="relative z-10 flex flex-col h-full" style={isCinematicZoom ? { animation: 'cinematic-text-fade 1.2s ease-out forwards' } : undefined}>
               {/* About Me heading */}
               <h1 className="font-serif text-[clamp(0.875rem,2.2vw,1.75rem)] font-bold mb-[clamp(0.125rem,0.3vw,0.375rem)] text-white drop-shadow-lg italic shrink-0 leading-[1.1]">
                 About Me

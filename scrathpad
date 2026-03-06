@@ -1,0 +1,15 @@
+The Passions -> Projects transition breaks the “travel through space” illusion.
+
+Current behavior:
+- On nav, the passions page elements correctly exits but the background briefly becomes black/blank for ~30–60ms.
+- Then the Projects stitched star background fades in.
+- Then ~10ms later the Projects cards fade in (they look like they spawn).
+
+Desired behavior:
+- The starfield background must NEVER 'feel' like they disappear (shouldn't notice the black frames) or at least fast enough to not notice this is happening! 
+- It should feel like the camera travels through space from Passions to Projects.
+- The Projects background and content should appear smoothly as we “arrive”, not spawn. Maybe enter from the bottom like passions page does correctly! 
+
+Maybe we can:
+add a subtle blur streak / speed lines overlay
+then reduce blur as Projects fades in

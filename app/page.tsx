@@ -19,7 +19,9 @@ export default function Home() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionDirection, setTransitionDirection] = useState<"in" | "out">("in")
   const [isCinematic, setIsCinematic] = useState(false)
+  const [isMonitorZoom, setIsMonitorZoom] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   const pageOrder: PageType[] = ["about", "passions", "projects", "stack"]
   
@@ -31,6 +33,14 @@ export default function Home() {
     const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
     mediaQuery.addEventListener("change", handleChange)
     return () => mediaQuery.removeEventListener("change", handleChange)
+  }, [])
+
+  // Detect mobile/narrow viewports where monitor is cropped by object-cover
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
   }, [])
 
   // Use spatial transition hook for parallax synchronization
@@ -47,7 +57,7 @@ export default function Home() {
 
   const handlePageChange = useCallback(
     (newPage: PageType) => {
-      if (newPage === currentPage || isTransitioning) return
+      if (newPage === currentPage || isTransitioning || isMonitorZoom) return
 
       const currentIndex = pageOrder.indexOf(currentPage)
       const newIndex = pageOrder.indexOf(newPage)
@@ -56,28 +66,68 @@ export default function Home() {
       // Track previous page for transition system
       setPreviousPage(currentPage)
 
-      // Special: About → Passions (monitor zoom portal - two-phase)
+      // Special: About → Passions
       if (currentPage === "about" && newPage === "passions") {
-        setIsCinematic(true)
-        setTransitionDirection("out")
+        if (isMobile) {
+          // Mobile: use cinematic overlay (original approach - works well on small screens)
+          setIsCinematic(true)
+          setTransitionDirection("out")
+          setIsTransitioning(true)
+
+          const phase2Delay = prefersReducedMotion ? 500 : 600
+
+          setTimeout(() => {
+            setCurrentPage(newPage)
+            setTransitionDirection("in")
+          }, phase2Delay)
+
+          setTimeout(() => {
+            setIsTransitioning(false)
+          }, DEPTH_TRANSITIONS.ADJACENT_DURATION + phase2Delay)
+
+          setTimeout(() => {
+            setIsCinematic(false)
+          }, DEPTH_TRANSITIONS.ADJACENT_DURATION + phase2Delay + 200)
+        } else {
+          // Desktop: camera zoom into monitor + galaxy scroll up
+          setIsMonitorZoom(true)
+          setTransitionDirection("out")
+          setIsTransitioning(true)
+
+          // Phase 1: Camera zoom into monitor (0-1.2s)
+          // Phase 2: About page slides up revealing passions (1.2-2.5s)
+          // Text fades out during zoom phase
+          const pageSwapDelay = prefersReducedMotion ? 200 : 1000
+          const endTransition = prefersReducedMotion ? 300 : 1100
+          const endZoom = prefersReducedMotion ? 800 : 2800
+
+          setTimeout(() => {
+            setCurrentPage(newPage)
+            setTransitionDirection("in")
+          }, pageSwapDelay)
+
+          setTimeout(() => {
+            setIsTransitioning(false)
+          }, endTransition)
+
+          setTimeout(() => {
+            setIsMonitorZoom(false)
+          }, endZoom)
+        }
+
+        return
+      }
+
+      // Reverse: Passions → About (quick crossfade)
+      if (currentPage === "passions" && newPage === "about") {
+        setTransitionDirection("in")
         setIsTransitioning(true)
 
-        // Phase 1: Monitor zoom (existing cinematic code handles this)
-        // Phase 2: Page swap and galaxy entry
-        const phase2Delay = prefersReducedMotion ? 500 : 600
-        
+        // Quick swap: both pages crossfade simultaneously
         setTimeout(() => {
           setCurrentPage(newPage)
-          setTransitionDirection("in")
-        }, phase2Delay)
-
-        setTimeout(() => {
           setIsTransitioning(false)
-        }, DEPTH_TRANSITIONS.ADJACENT_DURATION + phase2Delay)
-
-        setTimeout(() => {
-          setIsCinematic(false)
-        }, DEPTH_TRANSITIONS.ADJACENT_DURATION + phase2Delay + 200)
+        }, prefersReducedMotion ? 50 : 150)
 
         return
       }
@@ -125,7 +175,7 @@ export default function Home() {
         setIsTransitioning(false)
       }, prefersReducedMotion ? 300 : duration)
     },
-    [currentPage, isTransitioning, prefersReducedMotion],
+    [currentPage, isTransitioning, isMonitorZoom, prefersReducedMotion, isMobile],
   )
 
   useEffect(() => {
@@ -134,7 +184,7 @@ export default function Home() {
 
     const handleWheel = (e: WheelEvent) => {
       const now = Date.now()
-      if (now - lastScrollTime < scrollCooldown || isTransitioning) return
+      if (now - lastScrollTime < scrollCooldown || isTransitioning || isMonitorZoom) return
 
       const currentIndex = pageOrder.indexOf(currentPage)
 
@@ -151,7 +201,7 @@ export default function Home() {
     return () => {
       window.removeEventListener("wheel", handleWheel)
     }
-  }, [currentPage, isTransitioning, handlePageChange])
+  }, [currentPage, isTransitioning, isMonitorZoom, handlePageChange])
 
   // Touch swipe navigation (mobile) - simplified, only on empty areas
   useEffect(() => {
@@ -223,7 +273,7 @@ export default function Home() {
       const target = e.target as HTMLElement
       const isDragging = target.closest('[data-dragging="true"]')
       
-      if (isTransitioning || isInteractingWithElement || isDragging) {
+      if (isTransitioning || isMonitorZoom || isInteractingWithElement || isDragging) {
         isInteractingWithElement = false
         return
       }
@@ -258,12 +308,12 @@ export default function Home() {
       window.removeEventListener("touchmove", onTouchMove)
       window.removeEventListener("touchend", onTouchEnd)
     }
-  }, [currentPage, isTransitioning, handlePageChange])
+  }, [currentPage, isTransitioning, isMonitorZoom, handlePageChange])
 
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isTransitioning) return
+      if (isTransitioning || isMonitorZoom) return
 
       const currentIndex = pageOrder.indexOf(currentPage)
 
@@ -276,7 +326,7 @@ export default function Home() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [currentPage, isTransitioning, handlePageChange])
+  }, [currentPage, isTransitioning, isMonitorZoom, handlePageChange])
 
   return (
     <main 
@@ -304,6 +354,7 @@ export default function Home() {
           parallaxOffset={parallaxOffset}
           isSkipTransition={config?.isSkip || false}
           contentTransform={contentTransform}
+          isCinematicZoom={isMonitorZoom}
         />
         <PassionsPage
           isActive={currentPage === "passions"}
@@ -316,6 +367,7 @@ export default function Home() {
           parallaxOffset={parallaxOffset}
           isSkipTransition={config?.isSkip || false}
           contentTransform={contentTransform}
+          isCinematicEntry={isMonitorZoom && currentPage === "passions"}
         />
         <ProjectsPage
           isActive={currentPage === "projects"}
@@ -343,7 +395,7 @@ export default function Home() {
         />
       </div>
 
-      {isCinematic ? <CinematicOverlay /> : null}
+      {isCinematic && !isMonitorZoom ? <CinematicOverlay /> : null}
     </main>
   )
 }
