@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { withBasePath } from "@/lib/base-path"
 
 interface TiledBackgroundProps {
   sceneReady: boolean
@@ -88,6 +89,9 @@ export default function TiledBackground({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const resizeTimeoutRef = useRef<number | null>(null)
 
+  // Raw canvas image loads are not base-path-aware; resolve them manually.
+  const resolvedSrc = withBasePath(imageSrc)
+
   // Track dimensions if handleResize is true or if we need extraSize
   // Always initialize dimensions to viewport size for proper canvas sizing
   useEffect(() => {
@@ -107,16 +111,16 @@ export default function TiledBackground({
       const img = new window.Image()
       img.onload = () => setImgLoaded(true)
       img.onerror = (error) => {
-        console.error(`Failed to load image: ${imageSrc}`, error)
+        console.error(`Failed to load image: ${resolvedSrc}`, error)
         // Still set imgLoaded to false to prevent infinite waiting
         setImgLoaded(false)
       }
-      img.src = imageSrc
+      img.src = resolvedSrc
     } catch (error) {
-      console.error(`Error creating image for: ${imageSrc}`, error)
+      console.error(`Error creating image for: ${resolvedSrc}`, error)
       setImgLoaded(false)
     }
-  }, [imageSrc])
+  }, [resolvedSrc])
 
   // Draw canvas - only when sceneReady is true (prevent drawing when inactive)
   useEffect(() => {
@@ -155,7 +159,7 @@ export default function TiledBackground({
 
       // Load and draw the background image
       const img = new window.Image()
-      img.src = imageSrc
+      img.src = resolvedSrc
 
       img.onload = () => {
         // Calculate tile size based on grid density
@@ -192,7 +196,7 @@ export default function TiledBackground({
       }
 
       img.onerror = () => {
-        console.error(`Failed to load image for drawing: ${imageSrc}`)
+        console.error(`Failed to load image for drawing: ${resolvedSrc}`)
       }
     }
 
@@ -238,7 +242,7 @@ export default function TiledBackground({
     extraTiles,
     handleResize,
     usePanningStyle,
-    imageSrc,
+    resolvedSrc,
     gridDensity,
     transitionToDensity,
   ])

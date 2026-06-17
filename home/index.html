@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zahin Mohammad — Portfolio</title>
+<meta name="description" content="The portfolio of Zahin Mohammad — projects, passions, and stack, explored across four depths of space.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:ital,wght@0,500;0,600;1,400;1,500;1,600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:#04040a;color:#ece9ff;font-family:"Inter",-apple-system,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::-webkit-scrollbar{display:none}
+  body{scrollbar-width:none}
+  img{user-select:none;-webkit-user-drag:none}
+  @keyframes zu-twinkle{0%,100%{opacity:.15}50%{opacity:1}}
+  @keyframes zu-drift{0%{transform:translate(0,0)}50%{transform:translate(14px,-10px)}100%{transform:translate(0,0)}}
+  @keyframes zu-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.2%)}}
+  @keyframes zu-glow{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.08);opacity:1}}
+  @keyframes zu-pinglow{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.45}50%{transform:translate(-50%,-50%) scale(1.45);opacity:.9}}
+  @keyframes zu-grain{0%{transform:translate(0,0)}10%{transform:translate(-5%,-5%)}30%{transform:translate(3%,-8%)}50%{transform:translate(-4%,6%)}70%{transform:translate(6%,3%)}90%{transform:translate(-3%,-4%)}100%{transform:translate(0,0)}}
+  @keyframes zu-rise{0%{opacity:0;transform:translateY(26px)}100%{opacity:1;transform:translateY(0)}}
+  @keyframes zu-hint{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:.9;transform:translateY(5px)}}
+  @keyframes zu-blink{0%,49%{opacity:1}50%,100%{opacity:.12}}
+  @keyframes zu-reveal{0%{opacity:0;clip-path:inset(0 100% 0 0)}100%{opacity:1;clip-path:inset(0 0 0 0)}}
+  @keyframes zu-titlein{0%{opacity:0;clip-path:inset(0 100% 0 0);transform:translateY(16px)}100%{opacity:1;clip-path:inset(0 0 0 0);transform:translateY(0)}}
+  @keyframes zu-kickin{0%{opacity:0;letter-spacing:.62em}100%{opacity:1;letter-spacing:.42em}}
+  @keyframes zu-rulein{0%{opacity:0;transform:scaleX(0)}100%{opacity:1;transform:scaleX(1)}}
+  @keyframes zu-spin-slow{0%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}100%{transform:rotate(-2deg)}}
+  @keyframes zu-orbit-spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+</style>
+</helmet>
+
+<div id="scroller" style="height:450vh;position:relative;background:#04040a">
+  <div id="stage" style="position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;overflow:hidden;background:#04040a;perspective:1600px">
+    <div id="world" style="position:absolute;inset:0;transform-style:preserve-3d;will-change:transform">
+
+    <!-- deep space base -->
+    <div id="spaceBg" style="position:absolute;inset:-16%;overflow:hidden;opacity:var(--o,0);transform:var(--t,none);filter:var(--f,none);will-change:transform,opacity,filter">
+      <canvas id="bgA" style="position:absolute;inset:0;width:100%;height:100%;transform:var(--ta,none);opacity:var(--oa,1);transform-origin:center center;will-change:transform,opacity"></canvas>
+      <canvas id="bgB" style="position:absolute;inset:0;width:100%;height:100%;transform:var(--tb,none);opacity:var(--ob,0);transform-origin:center center;will-change:transform,opacity"></canvas>
+    </div>
+    <div id="nebula" style="position:absolute;inset:0;opacity:var(--o,0);background:radial-gradient(60% 55% at 50% 42%, rgba(120,98,255,.28), rgba(80,60,200,.10) 40%, transparent 72%);mix-blend-mode:screen;pointer-events:none"></div>
+    <div id="spaceTint" style="position:absolute;inset:0;opacity:var(--o,0);background:linear-gradient(180deg, rgba(8,6,20,.5), rgba(6,5,16,.74));pointer-events:none"></div>
+    <canvas id="cosmos" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen"></canvas>
+    </div><!-- /world -->
+
+    <!-- ============ SCENE: STACK (placeholder, filled later) ============ -->
+    <div id="sceneStack" style="position:absolute;inset:0;opacity:var(--o,0);transform:var(--t,none);filter:var(--f,none);will-change:transform,opacity,filter;pointer-events:none">
+      <div id="stackTitle" style="position:absolute;top:6.2vh;left:50%;transform:translateX(-50%);pointer-events:none;z-index:5;display:flex;flex-direction:column;align-items:center;text-align:center;width:max-content;max-width:90vw">
+        <div data-k style="display:flex;align-items:center;gap:11px;margin-bottom:13px;white-space:nowrap">
+          <span style="width:clamp(20px,4vw,38px);height:1px;background:linear-gradient(90deg,transparent,#8ff0c4)"></span>
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:clamp(9.5px,1.1vw,11.5px);font-weight:600;letter-spacing:.42em;text-transform:uppercase;color:#8ff0c4">04 · HELIOCENTRIC</span>
+          <span style="width:clamp(20px,4vw,38px);height:1px;background:linear-gradient(90deg,#8ff0c4,transparent)"></span>
+        </div>
+        <div data-n style="font-family:'Inter Tight',sans-serif;font-style:italic;font-weight:700;font-size:clamp(32px,5.4vw,60px);line-height:.95;color:#fff;text-shadow:0 0 38px rgba(157,139,255,.55),0 4px 26px rgba(0,0,0,.5)">Stack</div>
+        <div data-r style="width:56px;height:1px;margin-top:14px;background:linear-gradient(90deg,transparent,rgba(143,240,196,.9),transparent)"></div>
+        <div data-s style="font-family:'Inter',sans-serif;font-size:clamp(11px,1.4vw,14px);letter-spacing:.01em;color:rgba(225,222,245,.82);margin-top:12px">The tools I keep in orbit.</div>
+      </div>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+        <div id="stackSystem" style="position:relative;width:min(92vw,760px);height:min(92vw,760px)">
+          <div id="ringOuter" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;height:37%;border-radius:50%;border:1px solid rgba(110,196,150,.22)"><span style="position:absolute;top:-9px;left:50%;transform:translate(-50%,-100%);font-size:10.5px;letter-spacing:.16em;color:rgba(110,196,150,.7);font-weight:600">TOOLS</span></div>
+          <div id="ringMiddle" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;height:25%;border-radius:50%;border:1px solid rgba(108,140,255,.24)"><span style="position:absolute;top:-9px;left:50%;transform:translate(-50%,-100%);font-size:10.5px;letter-spacing:.16em;color:rgba(108,140,255,.72);font-weight:600">FRAMEWORKS</span></div>
+          <div id="ringInner" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:32%;height:13.4%;border-radius:50%;border:1px solid rgba(157,139,255,.3)"><span style="position:absolute;top:-9px;left:50%;transform:translate(-50%,-100%);font-size:10.5px;letter-spacing:.16em;color:rgba(178,166,255,.78);font-weight:600">LANGUAGES</span></div>
+          <div id="stackCore" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;pointer-events:auto;cursor:default">
+            <div style="position:relative;width:clamp(54px,9vw,84px);height:clamp(54px,9vw,84px)">
+              <div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 38% 34%, #d9c9ff, #9d8bff 45%, #6f4fd6 100%);box-shadow:0 0 40px rgba(157,139,255,.7), inset 0 0 18px rgba(255,255,255,.4);animation:zu-glow 4s ease-in-out infinite"></div>
+              <div style="position:absolute;inset:-14px;border-radius:50%;background:rgba(157,139,255,.22);filter:blur(14px);animation:zu-glow 5s ease-in-out infinite"></div>
+            </div>
+          </div>
+          <div id="stackIcons" style="position:absolute;inset:0;pointer-events:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SCENE: PROJECTS (placeholder, filled later) ============ -->
+    <div id="sceneProjects" style="position:absolute;inset:0;opacity:var(--o,0);transform:var(--t,none);filter:var(--f,none);will-change:transform,opacity,filter;pointer-events:none">
+      <div style="position:absolute;left:50%;bottom:-2%;transform:translateX(-50%);width:min(60vw,460px);height:40vh;background:radial-gradient(50% 60% at 50% 100%, rgba(120,98,255,.4), transparent 70%);filter:blur(30px);pointer-events:none"></div>
+      <div id="globeWrap" style="position:absolute;left:50%;bottom:0;transform:translate(-50%,16%);width:min(150vw,1380px);pointer-events:none">
+        <div id="globe" style="position:relative;animation:zu-spin-slow 80s linear infinite">
+          <img src="public/images/projectspageglobe.png" alt="Earth" style="width:100%;height:auto;display:block;filter:drop-shadow(0 -10px 60px rgba(90,70,210,.3))">
+          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="5">
+            <div style="position:absolute;top:{{ p.top }};left:{{ p.left }};transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer" onMouseEnter="{{ p.enter }}" onClick="{{ p.set }}">
+            <div style="position:absolute;top:30%;left:50%;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle, {{ p.pinColor }} 0%, transparent 68%);transform:translate(-50%,-50%);animation:zu-pinglow 3.2s ease-in-out infinite;pointer-events:none"></div>
+              <svg width="26" height="26" viewBox="0 0 512 512" style="position:relative;filter:drop-shadow(0 0 9px rgba(157,139,255,.9));transform:scale({{ p.pinScale }});transition:transform .3s ease">
+                <path d="M256,0C160.798,0,83.644,77.155,83.644,172.356c0,97.162,48.158,117.862,101.386,182.495C248.696,432.161,256,512,256,512s7.304-79.839,70.97-157.148c53.228-64.634,101.386-85.334,101.386-182.495C428.356,77.155,351.202,0,256,0z M256,231.921c-32.897,0-59.564-26.668-59.564-59.564s26.668-59.564,59.564-59.564c32.896,0,59.564,26.668,59.564,59.564S288.896,231.921,256,231.921z" fill="{{ p.pinColor }}"></path>
+              </svg>
+              <div style="position:absolute;top:-2px;left:50%;transform:translate(-50%,-100%);white-space:nowrap;font-size:11px;font-weight:600;letter-spacing:.04em;color:#fff;opacity:{{ p.labelOpacity }};text-shadow:0 2px 8px rgba(0,0,0,.8);transition:opacity .3s ease;pointer-events:none">{{ p.name }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div id="projectsTitle" style="position:absolute;top:6.2vh;left:50%;transform:translateX(-50%);pointer-events:none;display:flex;flex-direction:column;align-items:center;text-align:center;width:max-content;max-width:90vw">
+        <div data-k style="display:flex;align-items:center;gap:11px;margin-bottom:13px;white-space:nowrap">
+          <span style="width:clamp(20px,4vw,38px);height:1px;background:linear-gradient(90deg,transparent,#8fb6ff)"></span>
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:clamp(9.5px,1.1vw,11.5px);font-weight:600;letter-spacing:.42em;text-transform:uppercase;color:#8fb6ff">03 · ORBITAL</span>
+          <span style="width:clamp(20px,4vw,38px);height:1px;background:linear-gradient(90deg,#8fb6ff,transparent)"></span>
+        </div>
+        <div data-n style="font-family:'Inter Tight',sans-serif;font-style:italic;font-weight:700;font-size:clamp(32px,5.4vw,60px);line-height:.95;color:#fff;text-shadow:0 0 38px rgba(157,139,255,.55),0 4px 26px rgba(0,0,0,.5)">Projects</div>
+        <div data-r style="width:56px;height:1px;margin-top:14px;background:linear-gradient(90deg,transparent,rgba(143,182,255,.9),transparent)"></div>
+        <div data-s style="font-family:'Inter',sans-serif;font-size:clamp(11px,1.4vw,14px);letter-spacing:.01em;color:rgba(225,222,245,.82);margin-top:12px">Things I've designed, built, and shipped.</div>
+      </div>
+
+      <div id="projPanel" style="position:absolute;left:50%;bottom:15vh;transform:translateX(-50%);width:min(92vw,540px);background:rgba(10,12,22,0.82);backdrop-filter:blur(10px);border:1px solid rgba(157,139,255,.28);border-radius:18px;padding:22px 24px;box-shadow:0 24px 70px rgba(0,0,0,.55);pointer-events:auto">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+          <span style="font-family:'Inter Tight',sans-serif;font-style:italic;font-size:24px;font-weight:600;color:#fff">{{ activeProject.name }}</span>
+          <sc-if value="{{ activeProject.starred }}" hint-placeholder-val="{{ true }}">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="#f5c451"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z"></path></svg>
+          </sc-if>
+          <span style="margin-left:auto;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:rgba(143,182,255,.8);white-space:nowrap">{{ activeProject.date }}</span>
+        </div>
+        <p style="font-size:13.5px;line-height:1.6;color:rgba(255,255,255,.74);margin-bottom:14px;min-height:3.2em">{{ activeProject.desc }}</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ activeProject.techList }}" as="t" hint-placeholder-count="4">
+              <span style="font-size:11px;color:rgba(200,191,255,.9);background:rgba(157,139,255,.1);border:1px solid rgba(157,139,255,.2);padding:3px 9px;border-radius:999px">{{ t }}</span>
+            </sc-for>
+          </div>
+          <sc-if value="{{ activeProject.link }}" hint-placeholder-val="{{ true }}">
+          <a href="{{ activeProject.link }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#c2b8ff;text-decoration:none;white-space:nowrap">
+            {{ activeProject.linkText }}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"></path></svg>
+          </a>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SCENE: PASSIONS ============ -->
+    <div id="scenePassions" style="position:absolute;inset:0;opacity:var(--o,0);transform:var(--t,none);filter:var(--f,none);will-change:transform,opacity,filter;pointer-events:none">
+      <div id="cityWrap" style="position:absolute;inset:0;overflow:hidden">
+        <img id="cityImg" src="public/images/PassionsDark.png" alt="Ottawa from above" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center">
+        <div style="position:absolute;inset:0;background:radial-gradient(78% 78% at 50% 42%, transparent 46%, rgba(5,5,12,.5))"></div>
+        <div style="position:absolute;inset:0;pointer-events:none">
+          <sc-for list="{{ passions }}" as="p" hint-placeholder-count="4">
+            <div style="position:absolute;top:{{ p.top }};left:{{ p.left }};transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;z-index:5" onMouseEnter="{{ p.enter }}" onMouseLeave="{{ p.leave }}" onClick="{{ p.toggle }}">
+              <div style="position:absolute;top:30%;left:50%;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle, {{ p.pinColor }} 0%, transparent 68%);transform:translate(-50%,-50%);animation:zu-pinglow 3.2s ease-in-out infinite;pointer-events:none"></div>
+              <svg width="30" height="30" viewBox="0 0 512 512" style="position:relative;filter:drop-shadow(0 0 11px rgba(157,139,255,.95));opacity:{{ p.pinOpacity }};transform:scale({{ p.pinScale }});transition:transform .25s ease">
+                <path d="M256,0C160.798,0,83.644,77.155,83.644,172.356c0,97.162,48.158,117.862,101.386,182.495C248.696,432.161,256,512,256,512s7.304-79.839,70.97-157.148c53.228-64.634,101.386-85.334,101.386-182.495C428.356,77.155,351.202,0,256,0z M256,231.921c-32.897,0-59.564-26.668-59.564-59.564s26.668-59.564,59.564-59.564c32.896,0,59.564,26.668,59.564,59.564S288.896,231.921,256,231.921z" fill="{{ p.pinColor }}"></path>
+              </svg>
+              <div style="position:absolute;top:0;left:50%;width:236px;max-width:64vw;transform:{{ p.cardTransform }};opacity:{{ p.cardOpacity }};pointer-events:{{ p.cardPe }};transition:opacity .3s ease;background:rgba(10,12,22,0.82);backdrop-filter:blur(10px);border:1px solid rgba(157,139,255,.34);border-radius:14px;padding:13px 16px;box-shadow:0 18px 50px rgba(0,0,0,.55);z-index:10">
+                <div style="font-family:'Inter Tight',sans-serif;font-style:italic;font-size:18px;font-weight:600;color:#cabfff;margin-bottom:5px">{{ p.title }}</div>
+                <div style="font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.76)">{{ p.desc }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div id="passionsTitle" style="position:absolute;top:6.2vh;left:50%;transform:translateX(-50%);pointer-events:none;display:flex;flex-direction:column;align-items:center;text-align:center;width:max-content;max-width:90vw">
+        <div data-k style="display:flex;align-items:center;gap:11px;margin-bottom:13px;white-space:nowrap">
+          <span style="width:clamp(20px,4vw,38px);height:1px;background:linear-gradient(90deg,transparent,#ffa3b4)"></span>
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:clamp(9.5px,1.1vw,11.5px);font-weight:600;letter-spacing:.42em;text-transform:uppercase;color:#ffa3b4">02 · LOW ORBIT</span>
+          <span style="width:clamp(20px,4vw,38px);height:1px;background:linear-gradient(90deg,#ffa3b4,transparent)"></span>
+        </div>
+        <div data-n style="font-family:'Inter Tight',sans-serif;font-style:italic;font-weight:700;font-size:clamp(32px,5.4vw,60px);line-height:.95;color:#fff;text-shadow:0 0 38px rgba(157,139,255,.55),0 4px 26px rgba(0,0,0,.5)">Passions</div>
+        <div data-r style="width:56px;height:1px;margin-top:14px;background:linear-gradient(90deg,transparent,rgba(255,163,180,.9),transparent)"></div>
+        <div data-s style="font-family:'Inter',sans-serif;font-size:clamp(11px,1.4vw,14px);letter-spacing:.01em;color:rgba(225,222,245,.82);margin-top:12px">What I get up to off the clock.</div>
+      </div>
+      <div id="winsPanel" style="position:absolute;right:28px;bottom:28px;width:min(340px,86vw);background:rgba(10,12,22,0.82);backdrop-filter:blur(10px);border:1px solid rgba(245,196,81,.32);border-radius:16px;padding:16px 18px;box-shadow:0 20px 60px rgba(0,0,0,.5);pointer-events:auto">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#f5c451"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z"></path></svg>
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:#f5c451">Recent Wins</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <div style="font-family:'Inter Tight',sans-serif;font-weight:600;font-size:14px;color:#fff;margin-bottom:3px">Cursor × ElevenLabs × OpenAI <span style="font-weight:400;color:rgba(225,222,245,.5);font-size:12px">· 2026</span></div>
+            <div style="font-size:12px;line-height:1.5;color:rgba(225,222,245,.72)">Won <strong style="color:rgba(245,196,81,.95);font-weight:600">Best Project</strong> &amp; <strong style="color:rgba(245,196,81,.95);font-weight:600">Best Use of AI Voice Agents</strong> at Toronto Tech Week — judges granted a one-track-per-team exception for our team of 4.</div>
+          </div>
+          <div style="height:1px;background:rgba(255,255,255,.08)"></div>
+          <div>
+            <div style="font-family:'Inter Tight',sans-serif;font-weight:600;font-size:14px;color:#fff;margin-bottom:3px">YC × Ara SF <span style="font-weight:400;color:rgba(225,222,245,.5);font-size:12px">· 2026</span></div>
+            <div style="font-size:12px;line-height:1.5;color:rgba(225,222,245,.72)">Winner of "Build With Your AI Computer" — built <strong style="color:#fff;font-weight:600">FOMO</strong>, an AI platform matching people to startup events &amp; hackathons by their profile and goals.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SCENE: ABOUT (desk, on top) ============ -->
+    <div id="desk" style="position:absolute;inset:0;opacity:var(--o,1);transform:var(--t,none);filter:var(--f,none);transform-origin:50% 50%;will-change:transform,opacity,filter">
+      <img src="public/images/aboutmepagedark.png" alt="Zahin at his desk" style="width:100%;height:100%;object-fit:cover;object-position:center">
+      <div style="position:absolute;inset:0;background:linear-gradient(270deg, rgba(5,5,12,.72) 0%, rgba(5,5,12,.32) 38%, transparent 60%)"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(0deg, rgba(5,5,12,.6), transparent 36%)"></div>
+    </div>
+
+    <div id="aboutHero" style="position:absolute;right:0;top:0;height:100%;width:min(560px,90vw);display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;padding:0 6vw;opacity:var(--o,0);transform:var(--t,none);filter:var(--f,none);will-change:transform,opacity,filter;z-index:6">
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:#b9a8ff;opacity:.9;font-weight:600;margin-bottom:18px;animation:zu-rise .9s .1s both">01 · GROUND ZERO</div>
+      <h1 style="font-family:'Inter Tight',sans-serif;font-style:italic;font-weight:500;font-size:clamp(32px,8.4vw,92px);line-height:.98;letter-spacing:-.01em;margin-bottom:22px;animation:zu-rise 1s .22s both">Zahin<br>Mohammad</h1>
+      <p style="font-size:clamp(15px,1.5vw,18px);line-height:1.65;color:rgba(255,255,255,.72);max-width:30em;margin-bottom:30px;animation:zu-rise 1s .36s both">A founder and engineer from Ottawa who builds mostly AI products. I build systems end to end and figure out the rest by shipping them.</p>
+      <div style="display:flex;align-items:center;gap:10px;animation:zu-rise 1s .5s both">
+        <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:11px;backdrop-filter:blur(8px)">
+          <img src="public/images/carleton-logo.png" alt="Carleton University" style="height:18px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:.92">
+          <span style="font-size:12.5px;color:rgba(255,255,255,.72)">Carleton University</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;height:40px;padding:0 14px;background:rgba(157,139,255,.12);border:1px solid rgba(157,139,255,.3);border-radius:11px;font-size:12.5px;color:#cabfff;backdrop-filter:blur(8px)">Building &amp; shipping</div>
+      </div>
+    </div>
+
+    <!-- ============ INTRO COLD-OPEN ============ -->
+    <div id="intro" style="position:absolute;inset:0;background:#05050a;display:flex;align-items:center;justify-content:center;z-index:40;opacity:var(--o,1)">
+      <div id="introStars" style="position:absolute;inset:0;opacity:.5"></div>
+      <div style="position:relative;text-align:center;padding:0 6vw">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:11px;letter-spacing:.5em;text-transform:uppercase;color:#b9a8ff;opacity:.9;font-weight:600;margin-bottom:22px;animation:zu-rise 1.2s .2s both">A PORTFOLIO IN FOUR DEPTHS</div>
+        <div style="font-family:'Inter Tight',sans-serif;font-style:italic;font-weight:400;font-size:clamp(28px,8.6vw,104px);line-height:1;animation:zu-rise 1.4s .5s both">Zahin <span style="color:#b3a6ff">Mohammad</span></div>
+        <div style="margin-top:26px;font-size:clamp(13px,1.6vw,16px);color:rgba(255,255,255,.5);animation:zu-rise 1.4s .9s both">Scroll to fall through the universe</div>
+      </div>
+    </div>
+
+    <!-- ============ FILMIC OVERLAYS ============ -->
+    <!-- speed bloom -->
+    <div id="bloom" style="position:absolute;inset:0;pointer-events:none;z-index:32;opacity:.1;background:radial-gradient(circle at 50% 48%, rgba(210,200,255,.5), transparent 60%);mix-blend-mode:screen"></div>
+    <!-- chromatic streak (velocity-driven) -->
+    <div id="chroma" style="position:absolute;inset:0;pointer-events:none;z-index:33;opacity:0;mix-blend-mode:screen">
+      <div style="position:absolute;inset:0;box-shadow:inset 70px 0 90px -50px rgba(0,170,255,.7), inset -70px 0 90px -50px rgba(255,42,92,.7)"></div>
+    </div>
+
+    <!-- ============ CINEMATIC HUD ============ -->
+    <div id="hud" style="position:absolute;inset:0;pointer-events:none;z-index:44;font-family:'Space Grotesk',sans-serif;color:rgba(184,172,255,.7)">
+      <div style="position:absolute;top:14px;left:14px;width:22px;height:22px;border-left:1.5px solid rgba(157,139,255,.42);border-top:1.5px solid rgba(157,139,255,.42)"></div>
+      <div style="position:absolute;top:14px;right:14px;width:22px;height:22px;border-right:1.5px solid rgba(157,139,255,.42);border-top:1.5px solid rgba(157,139,255,.42)"></div>
+      <div style="position:absolute;bottom:14px;left:14px;width:22px;height:22px;border-left:1.5px solid rgba(157,139,255,.42);border-bottom:1.5px solid rgba(157,139,255,.42)"></div>
+      <div style="position:absolute;bottom:14px;right:14px;width:22px;height:22px;border-right:1.5px solid rgba(157,139,255,.42);border-bottom:1.5px solid rgba(157,139,255,.42)"></div>
+      <div style="position:absolute;top:30px;left:48px;display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.24em">
+        <span style="width:6px;height:6px;border-radius:50%;background:#9d8bff;box-shadow:0 0 9px #9d8bff;animation:zu-blink 1.7s steps(1) infinite"></span>
+        ZAHIN · UNIVERSE BROWSER
+      </div>
+      <div id="hudCoord" style="position:absolute;top:50px;left:48px;font-size:9.5px;letter-spacing:.18em;color:rgba(184,172,255,.42)">45.42°N · 75.70°W</div>
+      <div id="hudScale" style="position:absolute;top:30px;right:48px;font-size:10px;letter-spacing:.2em;text-align:right;color:rgba(184,172,255,.55)">SCALE 10⁰ m</div>
+      <div id="hudDepth" style="position:absolute;bottom:30px;right:48px;font-size:10px;letter-spacing:.2em;text-align:right">DEPTH 01 — INTERIOR</div>
+    </div>
+
+    <div id="vignette" style="position:absolute;inset:0;pointer-events:none;z-index:30;box-shadow:inset 0 0 200px 60px rgba(0,0,0,.62), inset 0 0 90px 10px rgba(20,10,50,.4)"></div>
+    <div id="grain" style="position:absolute;inset:-50%;pointer-events:none;z-index:31;opacity:.05;background-image:url('public/images/grain.png');background-size:160px 160px;animation:zu-grain 1.1s steps(5) infinite"></div>
+
+    <!-- ============ NAV RAIL (desktop, right — doubles as depth ladder) ============ -->
+    <nav id="navRail" style="position:fixed;left:0;top:50%;transform:translateY(-50%);height:288px;width:210px;z-index:50;display:none;pointer-events:none">
+      <div style="position:absolute;left:43px;top:8px;bottom:8px;width:1px;background:linear-gradient(180deg,transparent,rgba(157,139,255,.3) 8%,rgba(157,139,255,.3) 92%,transparent)"></div>
+      <div id="navProgress" style="position:absolute;left:43px;top:0%;width:8px;height:8px;border-radius:50%;background:#cabfff;box-shadow:0 0 13px #9d8bff;transform:translate(-50%,-50%);transition:top .32s cubic-bezier(.2,.7,.2,1)"></div>
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+        <button id="nav-{{ n.id }}" onClick="{{ n.go }}" style="position:absolute;left:43px;top:{{ n.railTop }};transform:translateY(-50%);display:flex;align-items:center;justify-content:flex-start;gap:11px;width:175px;padding:8px 0;background:transparent;border:none;cursor:pointer;font:inherit;color:rgba(255,255,255,.45);transition:color .35s ease;pointer-events:auto">
+          <span style="width:7px;height:7px;border-radius:50%;border:1.5px solid currentColor;flex:none;transform:translateX(-4px)"></span>
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:9px;letter-spacing:.06em;opacity:.5;width:15px;text-align:left">{{ n.num }}</span>
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;letter-spacing:.18em;white-space:nowrap">{{ n.label }}</span>
+        </button>
+      </sc-for>
+    </nav>
+
+    <!-- ============ NAV BAR (mobile) ============ -->
+    <nav id="navBar" style="position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;display:flex;gap:6px;padding:7px;border-radius:999px;background:rgba(10,9,20,.78);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(14px)">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+        <button id="navm-{{ n.id }}" onClick="{{ n.go }}" style="display:flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 13px;border-radius:999px;border:none;background:transparent;color:rgba(255,255,255,.6);cursor:pointer;transition:all .35s ease;font:inherit;font-size:11px;font-weight:700;letter-spacing:.1em">{{ n.short }}</button>
+      </sc-for>
+    </nav>
+
+    <!-- contact -->
+    <div id="contact" style="position:fixed;left:24px;bottom:24px;z-index:50;display:flex;gap:10px">
+      <a href="https://github.com/Zahin-Mohammad-plug" target="_blank" rel="noopener" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);backdrop-filter:blur(8px);transition:all .3s ease" title="GitHub">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,.8)"><path d="M12 .5C5.4.5 0 5.9 0 12.5c0 5.3 3.4 9.8 8.2 11.4.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 24 12.5C24 5.9 18.6.5 12 .5z"></path></svg>
+      </a>
+      <a href="https://www.linkedin.com/in/zahin-mohammad/" target="_blank" rel="noopener" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);backdrop-filter:blur(8px);transition:all .3s ease" title="LinkedIn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,.8)"><path d="M20.45 20.45h-3.56v-5.57c0-1.33 0-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.8 0 0 .77 0 1.73v20.54C0 23.22.8 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"></path></svg>
+      </a>
+      <a href="mailto:zahin@zahin.org" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);backdrop-filter:blur(8px);transition:all .3s ease" title="Email">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m2 7 10 6 10-6"></path></svg>
+      </a>
+    </div>
+
+    <!-- scroll hint -->
+    <div id="hint" style="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:45;display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none">
+      <span style="font-size:10px;letter-spacing:.32em;color:rgba(255,255,255,.55)">SCROLL</span>
+      <span style="animation:zu-hint 1.8s ease-in-out infinite;color:rgba(255,255,255,.7)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"></path></svg>
+      </span>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#9d8bff&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;filmGrain&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;cityTheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.state = { hover: null, activeProject: 'uplift' };
+    this.cur = 0; this.target = 0; this.prev = 0;
+    this.par = {x:0, y:0}; this.parT = {x:0, y:0};
+    this.activeScene = null;
+    this.orbitIcons = []; this.stackT = 0; this.stackPaused = false; this._stackVis = 0; this._last = 0; this.velS = 0;
+    this.mon = {cx:0, cy:0, S:3};
+    this.anchors = { intro:0.0, about:0.09, passions:0.40, projects:0.65, stack:0.93 };
+    this.snapAnchors = [0.0, 0.09, 0.40, 0.65, 0.93];
+    this.snapping = false; this._snapTimer = null; this._time = 0;
+    this._densA = null; this._densB = null;
+    this.loop = this.loop.bind(this);
+  }
+
+  // ---- data ----
+  get passionsData(){
+    return [
+      { id:'gym', title:'Gym', desc:'Where I go when debugging stops making sense and problems are better solved one rep at a time.', top:'20%', left:'36%', side:'below', cardX:0, pinColor:'#34d399' },
+      { id:'lab', title:'Homelab', desc:'A home server I keep mostly to learn what actually happens when systems are left running without supervision.', top:'21%', left:'67%', side:'below', cardX:-46, pinColor:'#60a5fa' },
+      { id:'print', title:'3D Printing', desc:'I may have misunderstood "software engineering" and spent too long learning CAD, slicing, and how designs fail physically.', top:'53%', left:'30%', side:'above', cardX:28, pinColor:'#fb923c' },
+      { id:'cars', title:'Cars', desc:"I'm drawn to cars — partly for how they work, partly for how many problems they hide until you look closely.", top:'59%', left:'65%', side:'above', cardX:-30, pinColor:'#fb7185' },
+    ];
+  }
+
+  get stackData(){
+    const D='https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/';
+    return {
+      inner:[
+        {name:'Python',icon:D+'python/python-original.svg'},
+        {name:'TypeScript',icon:D+'typescript/typescript-original.svg'},
+        {name:'JavaScript',icon:D+'javascript/javascript-original.svg'},
+        {name:'HTML5',icon:D+'html5/html5-original.svg'},
+        {name:'CSS3',icon:D+'css3/css3-original.svg'},
+      ],
+      middle:[
+        {name:'React',icon:D+'react/react-original.svg'},
+        {name:'Next.js',icon:D+'nextjs/nextjs-original.svg',hasDarkIcon:true},
+        {name:'Three.js',icon:D+'threejs/threejs-original.svg',hasDarkIcon:true},
+        {name:'FastAPI',icon:D+'fastapi/fastapi-original.svg'},
+        {name:'Flask',icon:D+'flask/flask-original.svg',hasDarkIcon:true},
+        {name:'PyTorch',icon:D+'pytorch/pytorch-original.svg'},
+        {name:'Prisma',icon:D+'prisma/prisma-original.svg',hasDarkIcon:true},
+      ],
+      outer:[
+        {name:'Docker',icon:D+'docker/docker-original.svg'},
+        {name:'PostgreSQL',icon:D+'postgresql/postgresql-original.svg'},
+        {name:'Redis',icon:D+'redis/redis-original.svg'},
+        {name:'Git',icon:D+'git/git-original.svg'},
+        {name:'Nginx',icon:D+'nginx/nginx-original.svg'},
+        {name:'Linux',icon:D+'linux/linux-original.svg',hasDarkIcon:true},
+        {name:'AWS',icon:D+'amazonwebservices/amazonwebservices-original-wordmark.svg',hasDarkIcon:true},
+        {name:'Terraform',icon:D+'terraform/terraform-original.svg'},
+      ],
+    };
+  }
+
+  buildStack(){
+    const host = this.els.stackIcons; if(!host) return;
+    host.innerHTML=''; this.orbitIcons=[];
+    const sz = window.innerWidth<768 ? 30 : 44;
+    const rings = [['inner',this.stackData.inner],['middle',this.stackData.middle],['outer',this.stackData.outer]];
+    rings.forEach(([ring,items])=>{
+      items.forEach((tech,i)=>{
+        const el=document.createElement('div');
+        el.style.cssText='position:absolute;left:50%;top:50%;pointer-events:auto;cursor:pointer;will-change:transform,opacity';
+        const circle=document.createElement('div');
+        circle.style.cssText='width:'+sz+'px;height:'+sz+'px;border-radius:50%;display:flex;align-items:center;justify-content:center;'+(tech.hasDarkIcon?'background:rgba(255,255,255,.92);padding:5px;':'');
+        const img=document.createElement('img');
+        img.src=tech.icon; img.alt=tech.name; img.crossOrigin='anonymous';
+        img.style.cssText='width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.55))';
+        circle.appendChild(img);
+        const tip=document.createElement('div');
+        tip.textContent=tech.name;
+        tip.style.cssText='position:absolute;left:50%;top:-10px;transform:translate(-50%,-100%);white-space:nowrap;font-size:11px;font-weight:600;color:#fff;background:rgba(13,11,24,.92);border:1px solid rgba(157,139,255,.32);padding:3px 8px;border-radius:7px;opacity:0;transition:opacity .2s ease;pointer-events:none';
+        el.appendChild(circle); el.appendChild(tip);
+        const item={el,ring,base:(i/items.length)*Math.PI*2,hovered:false};
+        el.addEventListener('mouseenter',()=>{item.hovered=true;this.stackPaused=true;tip.style.opacity='1';});
+        el.addEventListener('mouseleave',()=>{item.hovered=false;this.stackPaused=this.orbitIcons.some(o=>o.hovered);tip.style.opacity='0';});
+        el.addEventListener('touchstart',()=>{const was=item.hovered;this.orbitIcons.forEach(o=>{o.hovered=false;o.el.lastChild.style.opacity='0';});item.hovered=!was;tip.style.opacity=item.hovered?'1':'0';this.stackPaused=this.orbitIcons.some(o=>o.hovered);},{passive:true});
+        host.appendChild(el);
+        this.orbitIcons.push(item);
+      });
+    });
+  }
+
+  animateStack(dt){
+    if(!this.stackPaused) this.stackT += dt;
+    const W = this.els.stackSystem ? this.els.stackSystem.clientWidth : 600;
+    const cfg = {inner:{R:0.16,spd:0.20,dir:1}, middle:{R:0.30,spd:0.15,dir:-1}, outer:{R:0.44,spd:0.11,dir:1}};
+    (this.orbitIcons||[]).forEach(it=>{
+      const c=cfg[it.ring]; const Rx=c.R*W, Ry=Rx*0.42;
+      const th=it.base + this.stackT*c.spd*c.dir;
+      const x=Math.cos(th)*Rx, y=Math.sin(th)*Ry;
+      const d=(Math.sin(th)+1)/2;
+      const sc=(0.66+d*0.5)*(it.hovered?1.35:1);
+      it.el.style.transform='translate(-50%,-50%) translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px) scale('+sc.toFixed(3)+')';
+      it.el.style.opacity=(0.42+d*0.58).toFixed(3);
+      it.el.style.zIndex=String(Math.round(d*100));
+      it.el.style.filter = d<0.5 ? 'blur('+((0.5-d)*2.2).toFixed(2)+'px)' : 'none';
+    });
+  }
+
+  get projectsData(){
+    return [
+      { id:'uplift', name:'Baysly Uplift', starred:true, pinColor:'#f5c451', date:'2025 — Now', top:'33%', left:'29%', link:'https://baysly.com', linkText:'Visit site', tech:['Shopify','React','Python','AWS','Terraform'], desc:'A behavioral conversion engine for Shopify that reads live shopper friction in real time, personalizes only for the shoppers who can actually be persuaded, and bills purely on revenue proven against a persistent holdout.' },
+      { id:'imprint', name:'Baysly Imprint', pinColor:'#c084fc', date:'2025 — Now', top:'29%', left:'53%', link:'https://baysly.zahin.org', linkText:'Visit site', tech:['PyTorch','CLIP/SigLIP','Whisper ASR','Python','AWS'], desc:'Predicts how people respond psychologically to marketing video using brain-prediction models — scoring an ad’s memorability, emotional pull and cognitive load to forecast how well it will actually perform.' },
+      { id:'lilycove', name:'LilyCove', pinColor:'#fb923c', date:'Aug 2024', top:'47%', left:'22%', link:'https://beta.lilycove.io', linkText:'Visit beta', tech:['React','Python','PostgreSQL','Redis'], desc:'A market-intelligence platform that tracks the price of 4M+ trading-card listings in near real time, aggregating and analyzing pricing across TCGplayer, eBay and nearly every North American TCG store. A continuous pipeline scrapes ~40K listings/day; search returns in under 100ms.' },
+      { id:'maple', name:'Maple Leaf 3D', pinColor:'#34d399', date:'Jul 2024', top:'45%', left:'66%', link:'https://mapleleaf3d.ca', linkText:'Visit site', tech:['Next.js','Python','PrusaSlicer','Three.js','Docker'], desc:'A web platform that generates instant 3D-printing quotes by slicing uploaded models and computing cost from near-real G-code data.' },
+      { id:'mathtts', name:'LaTeX Math TTS', pinColor:'#60a5fa', date:'Dec 2024', top:'60%', left:'38%', link:'https://mathtts.zahin.org/', linkText:'Try it out', tech:['TypeScript','React','Parsing','Web Speech API'], desc:'A client-side tool that parses nested LaTeX expressions and converts them into synchronized spoken math for accessibility.' },
+      { id:'router', name:'Download Router', pinColor:'#fb7185', date:'Nov 2025', top:'62%', left:'58%', link:'https://github.com/Zahin-Mohammad-plug/Download-Router-Chrome-extension', linkText:'View on GitHub', tech:['JavaScript','CSS','Electron'], desc:'A Chrome extension that auto-routes downloads by domain, filename and file type, with a companion app for OS-level file operations on macOS and Windows.' },
+    ];
+  }
+
+  renderVals(){
+    const acc = this.props.accentColor || '#9d8bff';
+    const hover = this.state.hover;
+    const ap = this.state.activeProject || 'lilycove';
+    const projects = this.projectsData.map(p => ({
+      ...p,
+      pinScale: ap===p.id ? 1.5 : 1,
+      labelOpacity: ap===p.id ? 1 : 0.55,
+      enter: () => this.setState({activeProject:p.id}),
+      set: () => this.setState({activeProject:p.id}),
+    }));
+    const af = this.projectsData.find(p=>p.id===ap) || this.projectsData[0];
+    const activeProject = { ...af, techList: af.tech };
+    const passions = this.passionsData.map(p => {
+      const x = p.cardX || 0;
+      const t = p.side==='below'
+        ? 'translate(calc(-50% + '+x+'px), 28px)'
+        : 'translate(calc(-50% + '+x+'px), calc(-100% - 14px))';
+      return {
+        ...p,
+        pinOpacity: 1,
+        pinScale: hover===p.id ? 1.4 : 1,
+        cardOpacity: hover===p.id ? 1 : 0,
+        cardPe: hover===p.id ? 'auto' : 'none',
+        cardTransform: t,
+        enter: () => this.setState({hover:p.id}),
+        leave: () => this.setState(s => s.hover===p.id ? {hover:null} : null),
+        toggle: () => this.setState(s => ({hover: s.hover===p.id ? null : p.id})),
+      };
+    });
+    const nav = [
+      {id:'about', label:'ABOUT', short:'About', num:'01', railTop:'0%'},
+      {id:'passions', label:'PASSIONS', short:'Off', num:'02', railTop:'33.33%'},
+      {id:'projects', label:'PROJECTS', short:'Work', num:'03', railTop:'66.66%'},
+      {id:'stack', label:'STACK', short:'Stack', num:'04', railTop:'100%'},
+    ];
+    const navItems = nav.map(n => ({ ...n, go: () => this.goTo(n.id) }));
+    return { passions, projects, activeProject, navItems, acc };
+  }
+
+  // step between stops (intro + 4 depths) by nearest-to-current, so the cold-open never gets skipped
+  step(dir){
+    const ids=['intro','about','passions','projects','stack'];
+    const p=this.cur;
+    let idx=0,best=1e9;
+    ids.forEach((id,i)=>{ const d=Math.abs((this.anchors[id]||0)-p); if(d<best){best=d;idx=i;} });
+    const ni=Math.max(0,Math.min(ids.length-1, idx+dir));
+    if(ni!==idx) this.goTo(ids[ni]);
+  }
+
+  // map continuous progress to the ladder 0..1 across the four depth anchors
+  navFrac(p){
+    const a=[this.anchors.about,this.anchors.passions,this.anchors.projects,this.anchors.stack];
+    if(p<=a[0]) return 0; if(p>=a[3]) return 1;
+    for(let i=0;i<3;i++){ if(p<=a[i+1]) return (i+(p-a[i])/(a[i+1]-a[i]))/3; }
+    return 1;
+  }
+
+  goTo(id){
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const to = (this.anchors[id]||0)*max;
+    const from = window.scrollY;
+    if(Math.abs(to-from) < 2) return;
+    this.snapping = true; clearTimeout(this._snapTimer);
+    const dur = Math.min(1700, 720 + Math.abs(to-from)*0.5);
+    const t0 = performance.now();
+    const ease = t => t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+    const step = (now) => {
+      const k = Math.min((now-t0)/dur, 1);
+      window.scrollTo(0, from + (to-from)*ease(k));
+      if(k<1) requestAnimationFrame(step); else this.snapping=false;
+    };
+    requestAnimationFrame(step);
+  }
+
+  componentDidMount(){
+    this.cache();
+    this.buildStars(this.els.introStars, 60);
+    this.initCosmos();
+    this.buildStack();
+    this.computeMonitor();
+    this.computeCityFocal();
+    this.applyAccent();
+    this.galaxyImg = new window.Image();
+    this.galaxyImg.onload = () => { this._densA=null; this._densB=null; this.setDepth(1,2); };
+    this.galaxyImg.src = 'public/images/projectspagebackground.png';
+    this.onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      this.target = max>0 ? window.scrollY/max : 0;
+      if(!this.snapping){ clearTimeout(this._snapTimer); this._snapTimer = setTimeout(()=>this.snap(), 190); }
+    };
+    this.onResize = () => { this.computeMonitor(); this.computeCityFocal(); this.responsive(); this.buildStack(); this.initCosmos(); this._densA=null; this._densB=null; };
+    this.onMouse = (e) => {
+      this.parT.x = (e.clientX/window.innerWidth - .5)*2;
+      this.parT.y = (e.clientY/window.innerHeight - .5)*2;
+    };
+    window.addEventListener('scroll', this.onScroll, {passive:true});
+    window.addEventListener('resize', this.onResize);
+    window.addEventListener('mousemove', this.onMouse, {passive:true});
+    this.onKey = (e) => {
+      if(e.key==='ArrowDown'||e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){ e.preventDefault(); this.step(1); }
+      else if(e.key==='ArrowUp'||e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); this.step(-1); }
+    };
+    window.addEventListener('keydown', this.onKey);
+    this._lastNav = 0;
+    this.onWheel = (e) => {
+      e.preventDefault();
+      const now=performance.now();
+      if(now - this._lastNav < 820) return;
+      if(Math.abs(e.deltaY) < 6) return;
+      if(e.deltaY>0){ this._lastNav=now; this.step(1); }
+      else if(e.deltaY<0){ this._lastNav=now; this.step(-1); }
+    };
+    window.addEventListener('wheel', this.onWheel, {passive:false});
+    this.onTouchStart = (e)=>{ this._touchY = e.touches[0].clientY; };
+    this.onTouchMove = (e)=>{ if(e.cancelable) e.preventDefault(); };
+    this.onTouchEnd = (e)=>{
+      const dy = e.changedTouches[0].clientY - (this._touchY||0);
+      if(Math.abs(dy) < 45) return;
+      const now=performance.now(); if(now - this._lastNav < 820) return;
+      if(dy<0){ this._lastNav=now; this.step(1); }
+      else if(dy>0){ this._lastNav=now; this.step(-1); }
+    };
+    window.addEventListener('touchstart', this.onTouchStart, {passive:true});
+    window.addEventListener('touchmove', this.onTouchMove, {passive:false});
+    window.addEventListener('touchend', this.onTouchEnd, {passive:true});
+    this.onScroll(); this.responsive();
+    window.__zuSet = (pp)=>{ this.cur=pp; this.target=pp; try{ this.layout(pp,0); }catch(e){ window.__zuErr=String(e); } };
+    requestAnimationFrame(this.loop);
+  }
+  componentWillUnmount(){
+    window.removeEventListener('scroll', this.onScroll);
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('mousemove', this.onMouse);
+    window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('wheel', this.onWheel);
+    window.removeEventListener('touchstart', this.onTouchStart);
+    window.removeEventListener('touchmove', this.onTouchMove);
+    window.removeEventListener('touchend', this.onTouchEnd);
+  }
+
+  cache(){
+    const ids = ['spaceBg','bgA','bgB','nebula','spaceTint','cosmos','world','introStars','sceneStack','stackSystem','stackIcons','sceneProjects','scenePassions','cityWrap','cityImg','desk','aboutHero','intro','grain','navRail','navBar','hint','vignette','contact','chroma','bloom','hud','hudDepth','hudScale','hudCoord','navProgress','winsPanel'];
+    this.els = {};
+    ids.forEach(id => this.els[id] = document.getElementById(id));
+  }
+
+  applyAccent(){
+    const acc = this.props.accentColor || '#9d8bff';
+    if(this.els.stage) this.els.stage.style.setProperty('--acc', acc);
+    if(this.els.grain) this.els.grain.style.display = (this.props.filmGrain === true) ? 'block' : 'none';
+    if(this.els.cityImg) this.els.cityImg.src = (this.props.cityTheme==='light') ? 'public/images/PassionsLight.png' : 'public/images/PassionsDark.png';
+  }
+
+  responsive(){
+    const mob = window.innerWidth < 768;
+    if(this.els.navRail) this.els.navRail.style.display = mob ? 'none' : 'block';
+    if(this.els.navBar) this.els.navBar.style.display = mob ? 'flex' : 'none';
+    if(this.els.hudCoord) this.els.hudCoord.style.display = mob ? 'none' : 'block';
+    if(this.els.hudDepth) this.els.hudDepth.style.display = mob ? 'none' : 'block';
+    if(this.els.contact){
+      const c=this.els.contact;
+      if(mob){ c.style.left='50%'; c.style.right='auto'; c.style.bottom='68px'; c.style.transform='translateX(-50%)'; }
+      else { c.style.left='24px'; c.style.right='auto'; c.style.bottom='24px'; c.style.transform='none'; }
+    }
+    if(this.els.winsPanel){
+      const w=this.els.winsPanel;
+      if(mob){ w.style.left='50%'; w.style.right='auto'; w.style.top='20vh'; w.style.bottom='auto'; w.style.transform='translateX(-50%)'; }
+      else { w.style.left='auto'; w.style.right='28px'; w.style.top='auto'; w.style.bottom='28px'; w.style.transform='none'; }
+    }
+  }
+
+  buildStars(host, n){
+    if(!host) return;
+    host.innerHTML='';
+    for(let i=0;i<n;i++){
+      const s = document.createElement('div');
+      const sz = Math.random()*2.4+0.5;
+      const dur = Math.random()*3+2;
+      s.style.cssText = `position:absolute;left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;border-radius:50%;background:#fff;opacity:.5;animation:zu-twinkle ${dur}s ease-in-out ${Math.random()*4}s infinite, zu-drift ${Math.random()*16+16}s ease-in-out ${Math.random()*6}s infinite`;
+      host.appendChild(s);
+    }
+  }
+
+  computeMonitor(){
+    const vw=innerWidth, vh=innerHeight, iw=1536, ih=1024, ia=iw/ih, va=vw/vh;
+    let dw,dh,ox,oy;
+    if(va>ia){ dw=vw; dh=vw/ia; ox=0; oy=(vh-dh)/2; }
+    else{ dh=vh; dw=vh*ia; ox=(vw-dw)/2; oy=0; }
+    const sc = dw/iw;
+    // the window on the right of the desk scene — our portal OUT to the city
+    const wL=1286,wT=188,wW=208,wH=262;
+    const left=ox+wL*sc, top=oy+wT*sc, w=wW*sc, h=wH*sc;
+    let cx=left+w/2, cy=top+h/2;
+    let S=Math.max(vw/w, vh/h)*1.04;
+    if(vw<768){ S=Math.min(S,3); cx=Math.max(vw*0.18,Math.min(vw*0.82,cx)); cy=Math.max(0,Math.min(vh,cy)); }
+    this.mon = {cx,cy,S};
+  }
+
+  // screen position of the LilyCove pin on the settled globe — the point the city zooms out of
+  computeCityFocal(){
+    const vw=innerWidth, vh=innerHeight;
+    const W=Math.min(1.5*vw, 1380);
+    const H=W*(1024/1536);
+    this.cityFocal = { x: vw/2 - 0.237*W, y: vh - 0.372*H };
+  }
+
+  rnd(a,b){ return a + Math.random()*(b-a); }
+
+  fmtDist(m){ if(m<1e3) return m.toFixed(0)+' m'; if(m<1e6) return (m/1e3).toFixed(1)+' km'; if(m<1e9) return (m/1e6).toFixed(2)+' Mm'; return (m/1e9).toFixed(2)+' Gm'; }
+
+  initCosmos(){
+    const w=window.innerWidth, h=window.innerHeight;
+    const C={ w, h, stars:[], fine:[], dust:[], nebula:[], shoot:[], nextShoot:this.rnd(2,5) };
+    for(let i=0;i<280;i++){ const st=this.newStar(); st.z=0.18+(i/280)*1.12; C.stars.push(st); }
+    // dense fine-grained far field — only fades in at galactic depth (Stack)
+    for(let i=0;i<300;i++){ const lav=Math.random()<0.4; C.fine.push({x:Math.random()*w,y:Math.random()*h,r:this.rnd(0.35,0.95),tw:Math.random()*6.2832,tws:this.rnd(0.5,1.6),col:lav?[206,198,255]:[236,236,255]}); }
+    for(let i=0;i<58;i++) C.dust.push({x:Math.random()*w,y:Math.random()*h,r:this.rnd(1.6,3.6),a:this.rnd(0.03,0.09),vx:this.rnd(-3,3),vy:this.rnd(-2,2)});
+    const hues=[[157,139,255],[96,112,255],[188,96,230],[120,98,255]];
+    for(let i=0;i<5;i++) C.nebula.push({x:this.rnd(0.1,0.9)*w,y:this.rnd(0.1,0.85)*h,r:this.rnd(0.28,0.5)*Math.max(w,h),col:hues[i%hues.length],a:this.rnd(0.05,0.1),ph:Math.random()*6.28});
+    this.cosmos=C;
+  }
+
+  newStar(){
+    const r=Math.random(); let col;
+    if(r<0.66) col=(Math.random()<0.5)?[238,236,255]:[210,201,255];
+    else if(r<0.84) col=[255,233,206]; else col=[196,212,255];
+    return {x:this.rnd(-1,1),y:this.rnd(-1,1),z:this.rnd(0.18,1.3),col,tw:Math.random()*6.2832,tws:this.rnd(0.6,1.7)};
+  }
+
+  drawCosmos(dt){
+    const C=this.cosmos, cv=this.els.cosmos; if(!C||!cv) return;
+    if(cv.width!==C.w||cv.height!==C.h){ cv.width=C.w; cv.height=C.h; }
+    const ctx=cv.getContext('2d'); const w=C.w,h=C.h,t=this._time;
+    const pxx=this.par.x, pyy=this.par.y;
+    // galaxyLevel: ramps to 1 on the Stack scene -> drives the galactic-immersion look
+    const gl = this.galaxyLevel = (this.galaxyLevel||0) + (((this._stackVis||0)) - (this.galaxyLevel||0))*Math.min(1,dt*3);
+    ctx.clearRect(0,0,w,h);
+    ctx.globalCompositeOperation='screen';
+    C.nebula.forEach(n=>{
+      const nx=n.x+Math.sin(t*0.03+n.ph)*34+pxx*26, ny=n.y+Math.cos(t*0.024+n.ph)*26+pyy*26;
+      const a=n.a*(0.65+0.35*Math.sin(t*0.18+n.ph))*(0.5+0.95*gl);
+      const g=ctx.createRadialGradient(nx,ny,0,nx,ny,n.r);
+      g.addColorStop(0,'rgba('+n.col[0]+','+n.col[1]+','+n.col[2]+','+a+')');
+      g.addColorStop(1,'rgba('+n.col[0]+','+n.col[1]+','+n.col[2]+',0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(nx,ny,n.r,0,6.2832); ctx.fill();
+    });
+    // central system glow — the 'sun' the tech orbits, anchored at the system center (50% / 55%)
+    if(gl>0.01){
+      const gcx=w*0.5+pxx*8, gcy=h*0.55+pyy*8, gr=Math.min(w,h)*(0.33+0.05*Math.sin(t*0.22));
+      const gg=ctx.createRadialGradient(gcx,gcy,0,gcx,gcy,gr);
+      gg.addColorStop(0,'rgba(184,162,255,'+(0.18*gl).toFixed(3)+')');
+      gg.addColorStop(0.5,'rgba(150,118,242,'+(0.07*gl).toFixed(3)+')');
+      gg.addColorStop(1,'rgba(150,118,242,0)');
+      ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(gcx,gcy,gr,0,6.2832); ctx.fill();
+    }
+    // dense fine far-field stars (galaxy depth only), gently parallaxing WITH the deep field
+    if(gl>0.01){
+      ctx.globalCompositeOperation='lighter';
+      C.fine.forEach(s=>{ s.tw+=s.tws*dt; const tw=0.55+0.45*Math.sin(s.tw);
+        const a=0.7*gl*tw*(0.45+0.55*s.r);
+        ctx.fillStyle='rgba('+s.col[0]+','+s.col[1]+','+s.col[2]+','+a.toFixed(3)+')';
+        ctx.beginPath(); ctx.arc(s.x+pxx*5, s.y+pyy*5, s.r, 0, 6.2832); ctx.fill(); });
+    }
+    ctx.globalCompositeOperation='screen';
+    C.dust.forEach(d=>{ d.x+=d.vx*dt; d.y+=d.vy*dt; if(d.x<0)d.x+=w; if(d.x>w)d.x-=w; if(d.y<0)d.y+=h; if(d.y>h)d.y-=h;
+      const par=14+26*gl;
+      const dx=d.x - pxx*par, dy=d.y - pyy*par; const g=ctx.createRadialGradient(dx,dy,0,dx,dy,d.r);
+      const da=d.a*(0.8+0.7*gl);
+      g.addColorStop(0,'rgba(202,194,255,'+da.toFixed(3)+')'); g.addColorStop(1,'rgba(202,194,255,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(dx,dy,d.r,0,6.2832); ctx.fill(); });
+    const cx=w/2, cy=h/2, f=Math.min(w,h)*0.82;
+    const sp=Math.abs(this.velS||0);
+    const dir=(this.velS||0)>=0?1:-1;
+    const dolly=(-0.0006) + dir*(0.04 + sp*40)*dt;  // gentle idle cruise + scroll-driven camera dolly
+    const warp=Math.min(sp*55,1);
+    ctx.globalCompositeOperation='lighter'; ctx.lineCap='round';
+    C.stars.forEach(s=>{
+      s.z+=dolly;
+      if(s.z<0.12||s.z>1.5){ Object.assign(s,this.newStar()); s.z=(dir>=0)?0.2:1.45; s._init=false; }
+      s.tw+=s.tws*dt; const tw=0.72+0.28*Math.sin(s.tw);
+      const sx=cx+(s.x/s.z)*f*0.5+pxx*(1/s.z)*9, sy=cy+(s.y/s.z)*f*0.5+pyy*(1/s.z)*9;
+      if(!s._init){ s.psx=sx; s.psy=sy; s._init=true; }
+      const size=Math.min(4.0,Math.max(0.3,(1/s.z)*0.8*(1-0.32*gl)));
+      const a=Math.min(1,(1.4-s.z))*(0.4+0.6*tw);
+      const col=s.col[0]+','+s.col[1]+','+s.col[2];
+      ctx.strokeStyle='rgba('+col+','+a.toFixed(3)+')'; ctx.lineWidth=size;
+      ctx.beginPath(); ctx.moveTo(s.psx,s.psy); ctx.lineTo(sx,sy); ctx.stroke();
+      if(warp>0.35 && size>1.3){ const N=(warp-0.35)*6;
+        ctx.strokeStyle='rgba(255,70,100,'+(a*0.45).toFixed(3)+')'; ctx.beginPath(); ctx.moveTo(s.psx-N,s.psy); ctx.lineTo(sx-N,sy); ctx.stroke();
+        ctx.strokeStyle='rgba(70,150,255,'+(a*0.45).toFixed(3)+')'; ctx.beginPath(); ctx.moveTo(s.psx+N,s.psy); ctx.lineTo(sx+N,sy); ctx.stroke();
+      }
+      if(size>1.6){ ctx.fillStyle='rgba('+col+','+(a*0.14).toFixed(3)+')'; ctx.beginPath(); ctx.arc(sx,sy,size*2.6,0,6.2832); ctx.fill(); }
+      s.psx=sx; s.psy=sy;
+    });
+    C.nextShoot-=dt;
+    if(C.nextShoot<=0){ C.nextShoot=this.rnd(5,11); C.shoot.push({x:this.rnd(0.05,0.65)*w,y:this.rnd(0,0.35)*h,vx:this.rnd(260,420),vy:this.rnd(90,150),life:1}); }
+    C.shoot=C.shoot.filter(sh=>{
+      sh.x+=sh.vx*dt; sh.y+=sh.vy*dt; sh.life-=dt*0.55;
+      if(sh.life<=0||sh.x>w+60||sh.y>h+60) return false;
+      const ex=sh.x-sh.vx*0.10, ey=sh.y-sh.vy*0.10;
+      const g=ctx.createLinearGradient(sh.x,sh.y,ex,ey);
+      g.addColorStop(0,'rgba(225,228,255,'+(0.9*sh.life)+')'); g.addColorStop(1,'rgba(225,228,255,0)');
+      ctx.strokeStyle=g; ctx.lineWidth=1.6; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(sh.x,sh.y); ctx.lineTo(ex,ey); ctx.stroke();
+      return true;
+    });
+    ctx.globalCompositeOperation='source-over';
+  }
+
+  drawTiles(cv, density){
+    if(!cv || !this.galaxyImg || !this.galaxyImg.complete) return;
+    const w=cv.clientWidth||window.innerWidth, h=cv.clientHeight||window.innerHeight;
+    cv.width=w; cv.height=h;
+    const ctx=cv.getContext('2d'); const img=this.galaxyImg;
+    const tile=Math.ceil(Math.max(w,h)/density);
+    const cols=Math.ceil(w/tile)+2, rows=Math.ceil(h/tile)+2;
+    ctx.clearRect(0,0,w,h);
+    for(let r=0;r<rows;r++){ for(let c=0;c<cols;c++){
+      const x=(c-1)*tile, y=(r-1)*tile;
+      const seed=c+r*1000; const fx=(seed*73+1)%2===0, fy=(seed*97+1)%2===0;
+      ctx.save(); ctx.translate(x+tile/2,y+tile/2); ctx.scale(fx?-1:1,fy?-1:1);
+      ctx.drawImage(img,-tile/2,-tile/2,tile,tile); ctx.restore();
+    }}
+  }
+
+  setDepth(a,b){
+    if(this.els.bgA && this._densA!==a){ this.drawTiles(this.els.bgA,a); this._densA=a; }
+    if(this.els.bgB && this._densB!==b){ this.drawTiles(this.els.bgB,b); this._densB=b; }
+  }
+
+  // returns the two galaxy densities bracketing progress p and the eased blend t between them
+  depthFor(p){
+    if(p<0.71) return {a:4,b:4,t:0};
+    if(p<0.86) return {a:4,b:8,t:this.ss(0.71,0.86,p)};
+    return {a:8,b:8,t:0};
+  }
+
+  // settle onto the nearest scene when the user stops scrolling
+  snap(){
+    if(this.snapping) return;
+    const max=document.documentElement.scrollHeight-window.innerHeight; if(max<=0) return;
+    const p=window.scrollY/max;
+    let best=this.snapAnchors[0];
+    for(const a of this.snapAnchors){ if(Math.abs(a-p)<Math.abs(best-p)) best=a; }
+    const to=best*max, from=window.scrollY;
+    if(Math.abs(to-from)<3) return;
+    this.snapping=true;
+    const dur=Math.min(1500,640+Math.abs(to-from)*0.55), t0=performance.now();
+    const ease=t=>{ const c1=1.45, c3=c1+1; return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2); };
+    const step=now=>{ const k=Math.min((now-t0)/dur,1); window.scrollTo(0,from+(to-from)*ease(k)); if(k<1) requestAnimationFrame(step); else this.snapping=false; };
+    requestAnimationFrame(step);
+  }
+
+  // scene depth state: incoming blooms from huge (sFrom) and fades in EARLY; outgoing
+  // collapses to a speck (sExitTo) and fades out LATE -> classic Powers-of-Ten nesting
+  scene(p,e0,e1,x0,x1,sFrom,sExitTo){
+    const sIn=this.ss(e0,e1,p), sOut=this.ss(x0,x1,p);
+    const fIn=this.ss(e0, e0+(e1-e0)*0.5, p);
+    const fOut=this.ss(x0+(x1-x0)*0.55, x1, p);
+    const op=fIn*(1-fOut);
+    const scale=(sFrom+(1-sFrom)*sIn)*(1-(1-sExitTo)*sOut);
+    const blur=sOut*6+(1-sIn)*5;
+    return {op,scale,blur};
+  }
+
+  applyScene(el, st, origin, tx, ty, mb, bank){
+    if(!el) return;
+    el.style.transformOrigin = origin;
+    this.sv(el,'--o', st.op.toFixed(3));
+    this.sv(el,'--t', 'translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px) rotate('+(bank||0).toFixed(2)+'deg) scale('+st.scale.toFixed(4)+')');
+    const bl=st.blur+mb*0.4;
+    this.sv(el,'--f', bl>0.5?'blur('+bl.toFixed(2)+'px)':'none');
+    el.style.pointerEvents = st.op>0.6?'auto':'none';
+  }
+
+  // smoothstep 0..1
+  ss(a,b,x){ let t=(x-a)/(b-a); t=t<0?0:t>1?1:t; return t*t*(3-2*t); }
+  sv(el,prop,val){ if(el) el.style.setProperty(prop,val); }
+
+  // generic scene depth state
+  sc(p, e0,e1, x0,x1){
+    const inn = this.ss(e0,e1,p);
+    const out = this.ss(x0,x1,p);
+    const op = inn*(1-out);
+    const scale = (1.16 - inn*0.16) * (1 - out*0.18);
+    const blur = out*9 + (1-inn)*7;
+    return {op, scale, blur};
+  }
+
+  loop(ts){
+    if(!this._last) this._last = ts || 0;
+    const dt = Math.min(((ts||0) - this._last)/1000, 0.05); this._last = ts || 0;
+    this._time += dt;
+    const before = this.cur;
+    this.cur += (this.target - this.cur)*(1 - Math.exp(-dt*7));
+    const dv = this.cur - before;
+    this.velS = this.velS*0.82 + dv*0.18;
+    this.prev = this.cur;
+    this.par.x += (this.parT.x - this.par.x)*0.06; this.par.y += (this.parT.y - this.par.y)*0.06;
+    try { this.drawCosmos(dt); this.layout(this.cur, Math.abs(dv)); if(this._stackVis > 0.02) this.animateStack(dt); }
+    catch(e){ /* keep the camera loop alive across any transient frame error */ }
+    requestAnimationFrame(this.loop);
+  }
+
+  layout(p, vel){
+    const E = this.els; const speed = Math.abs(this.velS||0);
+    const env = Math.min(speed*55, 1);
+    const dir = (this.velS||0)>=0?1:-1;
+    const mb = Math.min(vel*240 + speed*900, 16);
+    const bank = dir*env*2.4;
+    if(E.world) E.world.style.transform = 'translateX('+(-dir*env*22).toFixed(1)+'px) scale('+(1.07+env*0.02).toFixed(3)+') rotateZ('+(dir*env*1.8).toFixed(2)+'deg) rotateX('+(-this.par.y*1.6).toFixed(2)+'deg) rotateY('+(this.par.x*1.6).toFixed(2)+'deg)';
+    const px = this.par.x, py = this.par.y;
+    const time = this._time || 0;
+    const driftX = Math.sin(time*0.07)*10, driftY = Math.cos(time*0.05)*8;
+
+    // intro cold-open
+    this.sv(E.intro,'--o', String(1 - this.ss(0,0.05,p)));
+    if(E.intro) E.intro.style.pointerEvents = p>0.04 ? 'none':'auto';
+
+    // ---- TILED GALAXY DEPTH ENGINE (powers of ten) ----
+    const d = this.depthFor(p); this.setDepth(d.a, d.b);
+    const ratio = d.a / d.b;                       // <1 = pulling back (denser), >1 = diving in
+    const scaleA = 1 + (ratio - 1)*d.t;            // current tiles shrink/grow away
+    const scaleB = (1/ratio) + (1 - 1/ratio)*d.t;  // next density settles into place
+    this.sv(E.bgA,'--ta', 'scale('+scaleA.toFixed(4)+')');
+    this.sv(E.bgB,'--tb', 'scale('+scaleB.toFixed(4)+')');
+    this.sv(E.bgA,'--oa', (1-d.t).toFixed(3));
+    this.sv(E.bgB,'--ob', d.t.toFixed(3));
+
+    // galaxy backdrop only appears once we pull back from the city toward the globe
+    const spO = this.ss(0.48,0.60,p);
+    const tileOp = spO * (0.40 - 0.30*this.ss(0.60,0.90,p)); // fade the repeating tile grid back, esp. Projects & Stack
+    this.sv(E.spaceBg,'--o', tileOp.toFixed(3));
+    this.sv(E.nebula,'--o', String(spO*0.95));
+    this.sv(E.spaceTint,'--o', String(spO*0.85));
+    if(E.cosmos) E.cosmos.style.opacity = Math.max(0.55 + spO*0.45, this.ss(0.20,0.31,p)*(1-this.ss(0.40,0.47,p))).toFixed(3);
+    this.sv(E.spaceBg,'--t', 'translate('+(px*-30+driftX).toFixed(1)+'px,'+(py*-30+driftY).toFixed(1)+'px) scale(1.06)');
+    this.sv(E.spaceBg,'--f', mb>1?'blur('+(mb*0.35).toFixed(2)+'px)':'none');
+
+    // ---- ABOUT: desk -> fly OUT the window to the city ----
+    const deskIn = this.ss(0.015,0.075,p);
+    const u = Math.max(0, Math.min(1, (p-0.13)/(0.34-0.13)));
+    const eu = u*u*(3-2*u);
+    const {cx,cy,S} = this.mon;
+    const deskScale = (1 + eu*(S-1)) * (1 + (1-deskIn)*0.06);
+    const deskOp = deskIn * (1 - this.ss(0.74,0.96,u));
+    if(E.desk) E.desk.style.transformOrigin = cx+'px '+cy+'px';
+    const deskLift = this.ss(0.5,1,u)*window.innerHeight*0.34;
+    this.sv(E.desk,'--t', 'translate('+(px*4).toFixed(1)+'px,'+(py*4 - deskLift).toFixed(1)+'px) scale('+deskScale.toFixed(4)+')');
+    this.sv(E.desk,'--o', String(deskOp));
+    this.sv(E.desk,'--f', mb>1?'blur('+(mb*0.5).toFixed(2)+'px)':'none');
+    if(E.desk) E.desk.style.pointerEvents = deskOp>0.5?'auto':'none';
+
+    const ho = deskIn*(1 - this.ss(0,0.34,u));
+    this.sv(E.aboutHero,'--o', String(ho));
+    this.sv(E.aboutHero,'--t', 'translate('+(px*-8).toFixed(1)+'px,'+(-u*60).toFixed(1)+'px)');
+    this.sv(E.aboutHero,'--f', u>0.01?'blur('+(eu*8).toFixed(2)+'px)':'none');
+    if(E.aboutHero) E.aboutHero.style.pointerEvents = ho>0.5?'auto':'none';
+
+    // ---- SCENES: nested Powers-of-Ten (each becomes a speck inside the next) ----
+    const vw=window.innerWidth, vh=window.innerHeight;
+    const winO = this.mon.cx.toFixed(0)+'px '+this.mon.cy.toFixed(0)+'px';   // the window we fly through
+    const cf = this.cityFocal || {x:vw*0.47,y:vh*0.40};
+    const cityO = cf.x.toFixed(0)+'px '+cf.y.toFixed(0)+'px';                // exactly the LilyCove pin on the globe
+    const ctrO = '50% 55%';                                                  // Earth -> a body in the system
+
+    // Passions (Ottawa): burst out the window, see the town at a steep oblique, then pitch level to top-down
+    const PA = this.scene(p, 0.16,0.34, 0.45,0.59, 1.6, 0.04);
+    const passO = p<0.395 ? winO : cityO;
+    this.applyScene(E.scenePassions, PA, passO, 0, 0, mb, bank);
+    const eIn = this.ss(0.155,0.35,p);                 // 0 = just left the window, 1 = settled over town
+    if(E.cityWrap){
+      const pitch=(1-eIn)*46, climbY=(1-eIn)*window.innerHeight*0.05;
+      E.cityWrap.style.transformOrigin='50% 80%';
+      E.cityWrap.style.transform='perspective(1300px) translateY('+climbY.toFixed(1)+'px) rotateX('+pitch.toFixed(2)+'deg)';
+      E.cityWrap.style.filter = (1-eIn)>0.02 ? 'blur('+((1-eIn)*2.6).toFixed(2)+'px)' : 'none';
+    }
+
+    // Projects (Earth): pull straight back out of the LilyCove pin until the whole globe is in orbit view
+    const PR = this.scene(p, 0.45,0.59, 0.71,0.86, 4.6, 0.12);
+    const projRise = (1-this.ss(0.45,0.59,p))*window.innerHeight*0.06;
+    this.applyScene(E.sceneProjects, PR, p<0.65?cityO:ctrO, px*10, py*10 + projRise, mb, bank);
+
+    // Stack (solar system): expands from the centre where the planet shrank
+    const ST = this.scene(p, 0.71,0.86, 0.99,1.3, 0.08, 1);
+    this._stackVis = ST.op;
+    this.applyScene(E.sceneStack, ST, ctrO, px*8, py*8, mb, bank);
+
+    // scroll hint
+    if(E.hint) E.hint.style.opacity = String(1 - this.ss(0.01,0.07,p));
+
+    // chrome fades in after the cold-open
+    const uiv = this.ss(0.05,0.10,p);
+    if(E.navRail) E.navRail.style.opacity = String(uiv);
+    if(E.navBar) E.navBar.style.opacity = String(uiv);
+    if(E.contact) E.contact.style.opacity = String(uiv);
+
+    // cinematic velocity effects: chromatic streak + speed bloom + HUD depth dot
+    if(E.chroma) E.chroma.style.opacity = (Math.max(0,env-0.2)*1.1).toFixed(3);
+    if(E.bloom) E.bloom.style.opacity = (0.07 + env*0.5).toFixed(3);
+    if(E.navProgress) E.navProgress.style.top = (this.navFrac(p)*100).toFixed(1)+'%';
+    if(E.hudScale) E.hudScale.textContent = 'RANGE ' + this.fmtDist(Math.pow(10, Math.max(0,Math.min(1,p))*9));
+
+    // nav active
+    let s = p<0.045?'intro':p<0.27?'about':p<0.52?'passions':p<0.78?'projects':'stack';
+    if(s!==this.activeScene){ this.activeScene=s; this.updateNav(s); }
+  }
+
+  updateNav(active){
+    const acc = this.props.accentColor || '#9d8bff';
+    const dl={about:'DEPTH 01 — INTERIOR',passions:'DEPTH 02 — LOW ORBIT · OTTAWA',projects:'DEPTH 03 — ORBITAL · EARTH',stack:'DEPTH 04 — HELIOCENTRIC'}[active];
+    const hd=document.getElementById('hudDepth'); if(hd&&dl) hd.textContent=dl;
+    const tm={passions:'passionsTitle',projects:'projectsTitle',stack:'stackTitle'}[active];
+    if(tm){ const te=document.getElementById(tm); if(te){
+      const q=(s)=>te.querySelector(s);
+      const play=(el,anim)=>{ if(el){ el.style.animation='none'; void el.offsetWidth; el.style.animation=anim; } };
+      play(q('[data-k]'),'zu-kickin .7s .12s cubic-bezier(.2,.7,.2,1) both');
+      play(q('[data-n]'),'zu-titlein .9s cubic-bezier(.2,.7,.2,1) both');
+      play(q('[data-r]'),'zu-rulein .85s .28s cubic-bezier(.2,.7,.2,1) both');
+      play(q('[data-s]'),'zu-rise .8s .4s cubic-bezier(.2,.7,.2,1) both');
+    } }
+    ['about','passions','projects','stack'].forEach(id => {
+      const b = document.getElementById('nav-'+id);
+      if(b){ const on = id===active; b.style.color = on ? '#fff' : 'rgba(255,255,255,.42)'; }
+      const m = document.getElementById('navm-'+id);
+      if(m){
+        const on = id===active;
+        m.style.background = on ? '#fff' : 'transparent';
+        m.style.color = on ? '#0a0a14' : 'rgba(255,255,255,.6)';
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

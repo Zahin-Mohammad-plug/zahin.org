@@ -7,6 +7,9 @@
 /.next/
 /out/
 
+# assembled GitHub Pages output (built in CI by the deploy workflow)
+/deploy/
+
 # production
 /build
 

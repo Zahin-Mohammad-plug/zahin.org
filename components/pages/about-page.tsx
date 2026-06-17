@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { withBasePath } from "@/lib/base-path"
 import Image from "next/image"
 import SparkleOverlay from "@/components/sparkle-overlay"
 import TiledBackground from "@/components/tiled-background"
@@ -178,7 +179,7 @@ export default function AboutPage({
           } : undefined}
         >
           <Image
-            src={aboutImage}
+            src={withBasePath(aboutImage)}
             alt="Zahin at desk"
             fill
             className="object-cover object-center"
@@ -274,7 +275,7 @@ export default function AboutPage({
                 {/* Carleton University logo */}
                 <div className="h-[clamp(1rem,1.8vw,1.75rem)] bg-white rounded-md px-1 flex items-center shadow-lg">
                   <Image
-                    src="/images/carleton-logo.png"
+                    src={withBasePath("/images/carleton-logo.png")}
                     alt="Carleton University"
                     width={80}
                     height={24}

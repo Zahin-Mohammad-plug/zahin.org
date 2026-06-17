@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { cn } from "@/lib/utils"
+import { withBasePath } from "@/lib/base-path"
 import Image from "next/image"
 import { ExternalLink, Star, ChevronLeft, ChevronRight } from "lucide-react"
 import SparkleOverlay from "@/components/sparkle-overlay"
@@ -364,7 +365,7 @@ export default function ProjectsPage({
             }}
           >
             <Image
-              src="/images/projectspageglobe.png"
+              src={withBasePath("/images/projectspageglobe.png")}
               alt="Globe"
               width={1400}
               height={900}

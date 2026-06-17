@@ -36,11 +36,28 @@ jobs:
       
       - name: Build with Next.js
         run: pnpm run build
-      
+
+      # Assemble the published site:
+      #   /      -> new "Zahin Universe" design (static, in /home)
+      #   /v2/   -> this legacy Next.js portfolio (built into ./out under basePath /v2)
+      #   /v1/   -> the original HTML/CSS/JS site
+      - name: Assemble site (root design + /v2 + /v1)
+        run: |
+          set -euo pipefail
+          rm -rf deploy
+          mkdir -p deploy
+          cp -R home/. deploy/
+          mkdir -p deploy/v2 && cp -R out/. deploy/v2/
+          mkdir -p deploy/v1 && cp -R v1/. deploy/v1/
+          cp CNAME deploy/CNAME
+          touch deploy/.nojekyll
+          echo "----- assembled deploy/ tree (top level) -----"
+          ls -la deploy
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./out
+          path: ./deploy
 
   deploy:
     environment:

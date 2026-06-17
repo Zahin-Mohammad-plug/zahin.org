@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useEffect, useState, useRef } from "react"
 import { cn } from "@/lib/utils"
+import { withBasePath } from "@/lib/base-path"
 import Image from "next/image"
 import SparkleOverlay from "@/components/sparkle-overlay"
 import TiledBackground from "@/components/tiled-background"
@@ -269,7 +270,7 @@ export default function PassionsPage({
             }}
           >
             <Image
-              src="/images/passionpage.png"
+              src={withBasePath("/images/passionpage.png")}
               alt="Passion house visualization"
               width={1200}
               height={800}

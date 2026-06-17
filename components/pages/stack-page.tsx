@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { cn } from "@/lib/utils"
+import { withBasePath } from "@/lib/base-path"
 import Image from "next/image"
 import SparkleOverlay from "@/components/sparkle-overlay"
 import TiledBackground from "@/components/tiled-background"
@@ -618,7 +619,7 @@ export default function StackPage({
             }}
           >
             <img
-              src={tech.icon || "/placeholder.svg"}
+              src={withBasePath(tech.icon || "/placeholder.svg")}
               alt={tech.name}
               className="w-full h-full drop-shadow-md"
               crossOrigin="anonymous"
