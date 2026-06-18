@@ -43,8 +43,13 @@
     #hudCoord{display:none}
     #hudScale{right:20px;font-size:9px;letter-spacing:.12em}
     #hudDepth{right:20px;font-size:9px}
-    /* Projects: show the prev/next slider on the card */
+    /* Projects: show the prev/next slider and centre the card (globe is off-screen) */
     .zu-projNav{display:flex !important}
+    #projPanel{top:50% !important;bottom:auto !important;transform:translate(-50%,-50%) !important}
+    /* Passions: pins are unreachable on a phone — swap to a centred slider card */
+    .zu-passCard{display:block !important}
+    .zu-pinCard{display:none !important}
+    #winsPanel{display:none !important}
     /* About: extra scrim so the bio stays readable over the illustration */
     .zu-aboutMScrim{display:block !important}
   }
@@ -168,7 +173,7 @@
               <svg width="30" height="30" viewBox="0 0 512 512" style="position:relative;filter:drop-shadow(0 0 11px rgba(157,139,255,.95));opacity:{{ p.pinOpacity }};transform:scale({{ p.pinScale }});transition:transform .25s ease">
                 <path d="M256,0C160.798,0,83.644,77.155,83.644,172.356c0,97.162,48.158,117.862,101.386,182.495C248.696,432.161,256,512,256,512s7.304-79.839,70.97-157.148c53.228-64.634,101.386-85.334,101.386-182.495C428.356,77.155,351.202,0,256,0z M256,231.921c-32.897,0-59.564-26.668-59.564-59.564s26.668-59.564,59.564-59.564c32.896,0,59.564,26.668,59.564,59.564S288.896,231.921,256,231.921z" fill="{{ p.pinColor }}"></path>
               </svg>
-              <div style="position:absolute;top:0;left:50%;width:236px;max-width:64vw;transform:{{ p.cardTransform }};opacity:{{ p.cardOpacity }};pointer-events:{{ p.cardPe }};transition:opacity .3s ease;background:rgba(10,12,22,0.82);backdrop-filter:blur(10px);border:1px solid rgba(157,139,255,.34);border-radius:14px;padding:13px 16px;box-shadow:0 18px 50px rgba(0,0,0,.55);z-index:10">
+              <div class="zu-pinCard" style="position:absolute;top:0;left:50%;width:236px;max-width:64vw;transform:{{ p.cardTransform }};opacity:{{ p.cardOpacity }};pointer-events:{{ p.cardPe }};transition:opacity .3s ease;background:rgba(10,12,22,0.82);backdrop-filter:blur(10px);border:1px solid rgba(157,139,255,.34);border-radius:14px;padding:13px 16px;box-shadow:0 18px 50px rgba(0,0,0,.55);z-index:10">
                 <div style="font-family:'Inter Tight',sans-serif;font-style:italic;font-size:18px;font-weight:600;color:#cabfff;margin-bottom:5px">{{ p.title }}</div>
                 <div style="font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.76)">{{ p.desc }}</div>
               </div>
@@ -202,6 +207,20 @@
             <div style="font-size:12px;line-height:1.5;color:rgba(225,222,245,.72)">Winner of "Build With Your AI Computer" — built <strong style="color:#fff;font-weight:600">FOMO</strong>, an AI platform matching people to startup events &amp; hackathons by their profile and goals.</div>
           </div>
         </div>
+      </div>
+      <!-- mobile-only slider for the passion points (pins are hard to tap on a phone) -->
+      <div id="passCard" class="zu-passCard" style="display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,440px);background:rgba(10,12,22,0.86);backdrop-filter:blur(10px);border:1px solid rgba(255,163,180,.3);border-radius:18px;padding:20px 22px;box-shadow:0 24px 70px rgba(0,0,0,.55);pointer-events:auto;z-index:12">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <button onClick="{{ activePassion.prev }}" aria-label="Previous passion" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,163,180,.34);background:rgba(255,163,180,.12);color:#ffc9d3;cursor:pointer;pointer-events:auto">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg>
+          </button>
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;color:rgba(255,163,180,.85)">{{ activePassion.counter }}</span>
+          <button onClick="{{ activePassion.next }}" aria-label="Next passion" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,163,180,.34);background:rgba(255,163,180,.12);color:#ffc9d3;cursor:pointer;pointer-events:auto">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+        </div>
+        <div style="font-family:'Inter Tight',sans-serif;font-style:italic;font-size:22px;font-weight:600;color:#ffc9d3;margin-bottom:8px">{{ activePassion.title }}</div>
+        <div style="font-size:13.5px;line-height:1.6;color:rgba(255,255,255,.78)">{{ activePassion.desc }}</div>
       </div>
     </div>
 
@@ -310,7 +329,7 @@
 class Component extends DCLogic {
   constructor(props){
     super(props);
-    this.state = { hover: null, activeProject: 'uplift' };
+    this.state = { hover: null, activeProject: 'uplift', activePassion: 'gym' };
     this.cur = 0; this.target = 0; this.prev = 0;
     this.par = {x:0, y:0}; this.parT = {x:0, y:0};
     this.activeScene = null;
@@ -462,6 +481,15 @@ class Component extends DCLogic {
         toggle: () => this.setState(s => ({hover: s.hover===p.id ? null : p.id})),
       };
     });
+    const _xlist = this.passionsData;
+    const _ax = this.state.activePassion || _xlist[0].id;
+    const _xidx = Math.max(0, _xlist.findIndex(p=>p.id===_ax));
+    const activePassion = {
+      ..._xlist[_xidx],
+      prev: () => this.setState({activePassion:_xlist[(_xidx - 1 + _xlist.length) % _xlist.length].id}),
+      next: () => this.setState({activePassion:_xlist[(_xidx + 1) % _xlist.length].id}),
+      counter: (_xidx + 1) + ' / ' + _xlist.length,
+    };
     const nav = [
       {id:'about', label:'ABOUT', short:'About', num:'01', railTop:'0%'},
       {id:'passions', label:'PASSIONS', short:'Off', num:'02', railTop:'33.33%'},
@@ -469,7 +497,7 @@ class Component extends DCLogic {
       {id:'stack', label:'STACK', short:'Stack', num:'04', railTop:'100%'},
     ];
     const navItems = nav.map(n => ({ ...n, go: () => this.goTo(n.id) }));
-    return { passions, projects, activeProject, navItems, acc };
+    return { passions, projects, activeProject, activePassion, navItems, acc };
   }
 
   // step between stops (intro + 4 depths) by nearest-to-current, so the cold-open never gets skipped
