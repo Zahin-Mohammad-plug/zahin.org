@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "zahin-universe",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "5599", "--directory", "home"],
+      "port": 5599
+    },
+    {
+      "name": "v2-nextjs",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev", "--port", "5600"],
+      "port": 5600
+    }
+  ]
+}
