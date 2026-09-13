@@ -83,6 +83,12 @@ const techStack = {
       icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linux/linux-original.svg",
       hasDarkIcon: true,
     },
+    {
+      name: "AWS",
+      icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original-wordmark.svg",
+      hasDarkIcon: true,
+    },
+    { name: "Terraform", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/terraform/terraform-original.svg" },
   ],
 }
 
