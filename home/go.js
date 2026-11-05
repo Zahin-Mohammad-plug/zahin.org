@@ -32,6 +32,13 @@ const POSTHOG_HOST = 'https://us.i.posthog.com'
   if (!dest.searchParams.has('utm_medium')) dest.searchParams.set('utm_medium', 'shortlink')
 
   if (POSTHOG_KEY) {
+    // If the visitor came through the main site, reuse its PostHog id and session
+    // so the click shows up on the same journey.
+    let visitor = {}
+    try {
+      const m = document.cookie.match(new RegExp('ph_' + POSTHOG_KEY + '_posthog=([^;]+)'))
+      visitor = JSON.parse(m ? decodeURIComponent(m[1]) : localStorage.getItem('ph_' + POSTHOG_KEY + '_posthog')) || {}
+    } catch (e) {}
     const props = {
       slug,
       source: dest.searchParams.get('utm_source'),
@@ -44,10 +51,12 @@ const POSTHOG_HOST = 'https://us.i.posthog.com'
     incoming.forEach((value, key) => {
       if (key.startsWith('utm_')) props[key] = value
     })
+    if (Array.isArray(visitor.$sesid)) props.$session_id = visitor.$sesid[1]
     const body = JSON.stringify({
       api_key: POSTHOG_KEY,
       event: 'booking_link_clicked',
-      distinct_id: crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2),
+      distinct_id:
+        visitor.distinct_id || (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)),
       properties: props,
     })
     // sendBeacon survives the navigation below, so no need to wait before redirecting.
