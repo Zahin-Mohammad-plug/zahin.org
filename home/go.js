@@ -15,7 +15,7 @@ const LINKS = {
 // Public project key from the "zahin.org" PostHog project (starts with phc_).
 // It can only send events, not read data, so it's safe to commit.
 // Leave empty to skip click tracking; the redirect still works.
-const POSTHOG_KEY = ''
+const POSTHOG_KEY = 'phc_xZXsmExuerfueHCGR6XBvStcacQLSYH398PM2RTLc9kk'
 const POSTHOG_HOST = 'https://us.i.posthog.com'
 
 ;(function () {
